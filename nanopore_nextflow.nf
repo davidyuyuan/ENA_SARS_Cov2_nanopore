@@ -7,14 +7,33 @@
  */
 
 params.OUTDIR = "results"
-params.SARS2_FA = "/data/ref/sars2/fa/NC_045512.2.fa"
+params.SARS2_FA = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa"
+params.index = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
+
+Channel
+    .fromPath(params.index)
+    .splitCsv(header:true, sep:'\t')
+    .map{ row-> tuple(row.run_accession, file(row.fastq_ftp)) }
+    .set { samples_ch }
+
+process check_input {
+    input:
+    set sampleId, file(input_file) from samples_ch
+
+    script:
+    """
+    echo "Run accession: $sampleId"
+    echo "Input file: $input_file"
+    """
+}
+
 
 /*
  * Trim 30 nucleotides of each end of the reads using cutadapt to ensure that primer derived sequences are not used to generate a consensus sequence
  */  
 process cut_adapters {
-    cpus 19
-    memory '30 GB'
+    cpus 10
+    memory '10 GB'
     container 'kfdrc/cutadapt'
     
     input:
@@ -35,8 +54,8 @@ process cut_adapters {
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
 
-    cpus 19 /* more is better, parallelizes very well*/
-    memory '30 GB'
+    cpus 10 /* more is better, parallelizes very well*/
+    memory '10 GB'
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
     input:
@@ -56,8 +75,8 @@ process map_to_reference {
 
 process check_coverage {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 1
-    memory '30 GB'
+    cpus 2
+    memory '4 GB'
     container 'alexeyebi/bowtie2_samtools'
 
     input:
@@ -78,8 +97,8 @@ process check_coverage {
 
 process make_small_file_with_coverage {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 1
-    memory '30 GB'
+    cpus 2
+    memory '4 GB'
     container 'alexeyebi/bowtie2_samtools'
 
     input:
@@ -100,7 +119,7 @@ process bam_to_vcf {
     tag '$run_id'
     publishDir params.OUTDIR, mode:'copy'
     cpus 10
-    memory '30 GB'
+    memory '10 GB'
     container 'alexeyebi/ena-sars-cov2-nanopore'
 
     input:
@@ -120,8 +139,8 @@ process bam_to_vcf {
 
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 1
-    memory '30 GB'
+    cpus 2
+    memory '4 GB'
     container 'alexeyebi/snpeff'
 
     input:
