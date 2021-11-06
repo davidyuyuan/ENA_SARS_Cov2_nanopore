@@ -13,20 +13,24 @@ params.index = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
 Channel
     .fromPath(params.index)
     .splitCsv(header:true, sep:'\t')
-    .map{ row-> tuple(row.run_accession, file(row.fastq_ftp)) }
+    .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
     .set { samples_ch }
 
-process check_input {
+process download_fastq {
+    container 'google/cloud-sdk'
+    cpus 2
+    memory '4 GB'
+
     input:
-    set sampleId, file(input_file) from samples_ch
+    tuple sampleId, file(input_file) from samples_ch
+    output:
+    file "${sampleId}_1.fastq.gz" into fastq_ch
 
     script:
     """
-    echo "Run accession: $sampleId"
-    echo "Input file: $input_file"
+    curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
 }
-
 
 /*
  * Trim 30 nucleotides of each end of the reads using cutadapt to ensure that primer derived sequences are not used to generate a consensus sequence
@@ -37,7 +41,8 @@ process cut_adapters {
     container 'kfdrc/cutadapt'
     
     input:
-    path input_file from params.INPUT
+//    path input_file from params.INPUT
+    file input_file from fastq_ch
     
     output:
     path 'trimmed.fastq' into trimmed_ch
