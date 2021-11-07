@@ -18,9 +18,9 @@ Channel
 
 process download_fastq {
     container 'davidyuyuan/samtools:dlf'
-    // 1 CPU 1 GB is enough
+    // Use GLS default 1 CPU 1 GB
     // cpus 2
-    // memory '8 GB'
+    // memory '1 GB'
 
     input:
     tuple sampleId, file(input_file) from samples_ch
@@ -38,8 +38,9 @@ process download_fastq {
  * Trim 30 nucleotides of each end of the reads using cutadapt to ensure that primer derived sequences are not used to generate a consensus sequence
  */  
 process cut_adapters {
-    cpus 2      // 16
-    memory '8 GB'      // '64 GB'
+    // Use GLS default 1 CPU 1 GB
+    // cpus 2
+    // memory '1 GB'
     container 'kfdrc/cutadapt'
     
     input:
@@ -147,7 +148,7 @@ process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
 
     cpus 8 /* more is better, parallelizes very well*/
-    memory '32 GB'
+    memory '1 GB'      // '8 GB'
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
     input:
@@ -170,8 +171,8 @@ process map_to_reference {
 
 process check_coverage {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 8
-    memory '32 GB'
+    cpus 2
+    memory '4 GB'
     container 'alexeyebi/bowtie2_samtools'
 
     input:
@@ -189,11 +190,11 @@ process check_coverage {
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     """
 }
-/*
+
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 8
-    memory '32 GB'
+    cpus 2
+    memory '4 GB'
     container 'alexeyebi/snpeff'
 
     input:
@@ -209,4 +210,3 @@ process annotate_snps {
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
-*/
