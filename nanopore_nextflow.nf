@@ -143,7 +143,6 @@ process bam_to_vcf {
 }
 */
 process map_to_reference {
-    tag '$run_id'
     publishDir params.OUTDIR, mode:'copy'
 
     cpus 16 /* more is better, parallelizes very well*/
@@ -151,20 +150,20 @@ process map_to_reference {
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
     input:
-    tuple run_id, path(trimmed) from trimmed_ch
+    tuple sampleId, path(trimmed) from trimmed_ch
     path(ref) from params.SARS2_FA
     // val run_id from params.RUN_ID
     
     output:
-    tuple run_id, path("${run_id}.bam") into sars2_aligned_reads_ch
-    path("${run_id}.bam")
-    tuple run_id, path("${run_id}.vcf") into vcf_ch
+    tuple sampleId, path("${sampleId}.bam") into sars2_aligned_reads_ch
+    path("${sampleId}.bam")
+    tuple sampleId, path("${sampleId}.vcf") into vcf_ch
     
     script:
     """
-    minimap2 -Y -t ${task.cpus} -x map-ont -a ${ref} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${run_id}.bam
-    samtools index -@ ${task.cpus} ${run_id}.bam
-    bam_to_vcf.py -b ${run_id}.bam -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${run_id}.vcf
+    minimap2 -Y -t ${task.cpus} -x map-ont -a ${ref} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
+    samtools index -@ ${task.cpus} ${sampleId}.bam
+    bam_to_vcf.py -b ${sampleId}.bam -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
     """
 }
 
@@ -175,18 +174,18 @@ process check_coverage {
     container 'alexeyebi/bowtie2_samtools'
 
     input:
-    tuple run_id, path(bam) from sars2_aligned_reads_ch
+    tuple sampleId, path(bam) from sars2_aligned_reads_ch
     // val run_id from params.RUN_ID
     path sars2_fasta from params.SARS2_FA
 
     output:
-    path("${run_id}.pileup")
-    path("${run_id}.coverage")
+    path("${sampleId}.pileup")
+    path("${sampleId}.coverage")
 
     script:
     """
-    samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${bam} > ${run_id}.pileup
-    cat ${run_id}.pileup | awk '{print \$2,","\$3,","\$4}' > ${run_id}.coverage
+    samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${bam} > ${sampleId}.pileup
+    cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     """
 }
 
@@ -197,15 +196,15 @@ process annotate_snps {
     container 'alexeyebi/snpeff'
 
     input:
-    tuple run_id, path(vcf) from vcf_ch
+    tuple sampleId, path(vcf) from vcf_ch
     // val run_id from params.RUN_ID
 
     output:
-    path("${run_id}.annot.vcf")
+    path("${sampleId}.annot.vcf")
 
     script:
+    // java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
-    cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${run_id}.newchr.vcf
-    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${run_id}.newchr.vcf > ${run_id}.annot.vcf
+    cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
     """
 }
