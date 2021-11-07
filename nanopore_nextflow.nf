@@ -36,8 +36,8 @@ process download_fastq {
  * Trim 30 nucleotides of each end of the reads using cutadapt to ensure that primer derived sequences are not used to generate a consensus sequence
  */  
 process cut_adapters {
-    cpus 10
-    memory '10 GB'
+    cpus 16
+    memory '64 GB'
     container 'kfdrc/cutadapt'
     
     input:
@@ -56,10 +56,11 @@ process cut_adapters {
 /*
  * Map reads to SARS-CoV-2 reference genome
  */ 
+/*
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
 
-    cpus 10 /* more is better, parallelizes very well*/
+    cpus 10 // more is better, parallelizes very well
     memory '10 GB'
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
@@ -119,7 +120,6 @@ process make_small_file_with_coverage {
     """
 }
 
-
 process bam_to_vcf {
     tag '$run_id'
     publishDir params.OUTDIR, mode:'copy'
@@ -139,6 +139,54 @@ process bam_to_vcf {
     """
     samtools index -@ ${task.cpus} ${bam}
     bam_to_vcf.py -b ${bam} -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${run_id}.vcf
+    """
+}
+*/
+process map_to_reference {
+    tag '$run_id'
+    publishDir params.OUTDIR, mode:'copy'
+
+    cpus 16 /* more is better, parallelizes very well*/
+    memory '64 GB'
+    container 'alexeyebi/ena-sars-cov2-nanopore'
+    
+    input:
+    path trimmed from trimmed_ch
+    path ref from params.SARS2_FA
+    val run_id from params.RUN_ID
+    
+    output:
+    path "${run_id}.bam" into sars2_aligned_reads_ch
+    path("${run_id}.bam")
+    path "${run_id}.vcf" into vcf_ch
+    
+    script:
+    """
+    minimap2 -Y -t ${task.cpus} -x map-ont -a ${ref} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${run_id}.bam
+    samtools index -@ ${task.cpus} ${run_id}.bam
+    bam_to_vcf.py -b ${run_id}.bam -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${run_id}.vcf
+    """
+}
+
+process check_coverage {
+    publishDir params.OUTDIR, mode:'copy'
+    cpus 2
+    memory '4 GB'
+    container 'alexeyebi/bowtie2_samtools'
+
+    input:
+    path bam from sars2_aligned_reads_ch
+    val run_id from params.RUN_ID
+    path sars2_fasta from params.SARS2_FA
+
+    output:
+    path("${run_id}.pileup")
+    path("${run_id}.coverage")
+
+    script:
+    """
+    samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${bam} > ${run_id}.pileup
+    cat ${run_id}.pileup | awk '{print \$2,","\$3,","\$4}' > ${run_id}.coverage
     """
 }
 
