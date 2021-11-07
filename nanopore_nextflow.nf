@@ -205,6 +205,9 @@ process annotate_snps {
     script:
     // java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
+    ls -l
+    cat ${vcf}
+    sed -h
     cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
     """
 }
