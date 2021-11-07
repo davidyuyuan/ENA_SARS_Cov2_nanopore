@@ -147,8 +147,8 @@ process bam_to_vcf {
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
 
-    cpus 8 /* more is better, parallelizes very well*/
-    memory '8 GB'
+    cpus 4 /* more is better, parallelizes very well*/
+    memory '4 GB'
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
     input:
@@ -171,8 +171,8 @@ process map_to_reference {
 
 process check_coverage {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 8
-    memory '8 GB'
+    cpus 4
+    memory '4 GB'
     container 'alexeyebi/bowtie2_samtools'
 
     input:
@@ -193,8 +193,8 @@ process check_coverage {
 
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 8
-    memory '8 GB'
+    cpus 4
+    memory '4 GB'
     container 'alexeyebi/snpeff'
 
     input:
