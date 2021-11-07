@@ -17,7 +17,7 @@ Channel
     .set { samples_ch }
 
 process download_fastq {
-    container 'davidyuyuan/notebook-bcftools:1.13'        //'google/cloud-sdk'
+    container 'davidyuyuan/samtools:dlf'        //'google/cloud-sdk'
     cpus 2
     memory '8 GB'
 
@@ -27,9 +27,9 @@ process download_fastq {
     tuple sampleId, file("${sampleId}_1.fastq.gz") into fastq_ch
 
     script:
+    // wget -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
-    # curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
-    wget -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+    curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
 }
 
