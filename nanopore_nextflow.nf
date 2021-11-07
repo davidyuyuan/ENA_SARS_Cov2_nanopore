@@ -17,7 +17,7 @@ Channel
     .set { samples_ch }
 
 process download_fastq {
-    container 'davidyuyuan/samtools:dlf'        //'google/cloud-sdk'
+    container 'davidyuyuan/samtools:dlf'
     cpus 2
     memory '8 GB'
 
@@ -169,8 +169,8 @@ process map_to_reference {
 
 process check_coverage {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 8
-    memory '32 GB'
+    cpus 16
+    memory '64 GB'
     container 'alexeyebi/bowtie2_samtools'
 
     input:
@@ -191,8 +191,8 @@ process check_coverage {
 
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 8
-    memory '32 GB'
+    cpus 16
+    memory '64 GB'
     container 'alexeyebi/snpeff'
 
     input:
