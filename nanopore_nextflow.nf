@@ -169,8 +169,8 @@ process map_to_reference {
 
 process check_coverage {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 2
-    memory '8 GB'
+    cpus 8
+    memory '32 GB'
     container 'alexeyebi/bowtie2_samtools'
 
     input:
@@ -191,8 +191,8 @@ process check_coverage {
 
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 2
-    memory '8 GB'
+    cpus 8
+    memory '32 GB'
     container 'alexeyebi/snpeff'
 
     input:
