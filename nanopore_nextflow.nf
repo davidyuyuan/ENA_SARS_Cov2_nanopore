@@ -41,11 +41,10 @@ process cut_adapters {
     container 'kfdrc/cutadapt'
     
     input:
-//    path input_file from params.INPUT
     tuple sampleId, file(input_file) from fastq_ch
     
     output:
-    tuple sampleId, path('trimmed.fastq') into trimmed_ch
+    tuple sampleId, file('trimmed.fastq') into trimmed_ch
     
     script:
     """
@@ -150,14 +149,14 @@ process map_to_reference {
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
     input:
-    tuple sampleId, path(trimmed) from trimmed_ch
+    tuple sampleId, file(trimmed) from trimmed_ch
     path(ref) from params.SARS2_FA
     // val run_id from params.RUN_ID
     
     output:
-    tuple sampleId, path("${sampleId}.bam") into sars2_aligned_reads_ch
-    path("${sampleId}.bam")
-    tuple sampleId, path("${sampleId}.vcf") into vcf_ch
+    tuple sampleId, file("${sampleId}.bam") into sars2_aligned_reads_ch
+    file("${sampleId}.bam")
+    tuple sampleId, file("${sampleId}.vcf") into vcf_ch
     
     script:
     """
@@ -174,13 +173,13 @@ process check_coverage {
     container 'alexeyebi/bowtie2_samtools'
 
     input:
-    tuple sampleId, path(bam) from sars2_aligned_reads_ch
+    tuple sampleId, file(bam) from sars2_aligned_reads_ch
     // val run_id from params.RUN_ID
-    path sars2_fasta from params.SARS2_FA
+    path(sars2_fasta) from params.SARS2_FA
 
     output:
-    path("${sampleId}.pileup")
-    path("${sampleId}.coverage")
+    file("${sampleId}.pileup")
+    file("${sampleId}.coverage")
 
     script:
     """
@@ -196,11 +195,11 @@ process annotate_snps {
     container 'alexeyebi/snpeff'
 
     input:
-    tuple sampleId, path(vcf) from vcf_ch
+    tuple sampleId, file(vcf) from vcf_ch
     // val run_id from params.RUN_ID
 
     output:
-    path("${sampleId}.annot.vcf")
+    file("${sampleId}.annot.vcf")
 
     script:
     // java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
