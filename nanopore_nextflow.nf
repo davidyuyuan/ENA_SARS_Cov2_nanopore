@@ -19,7 +19,7 @@ Channel
 process download_fastq {
     container 'google/cloud-sdk'
     cpus 2
-    memory '4 GB'
+    memory '8 GB'
 
     input:
     tuple sampleId, file(input_file) from samples_ch
@@ -171,7 +171,7 @@ process map_to_reference {
 process check_coverage {
     publishDir params.OUTDIR, mode:'copy'
     cpus 2
-    memory '4 GB'
+    memory '8 GB'
     container 'alexeyebi/bowtie2_samtools'
 
     input:
@@ -193,7 +193,7 @@ process check_coverage {
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
     cpus 2
-    memory '4 GB'
+    memory '8 GB'
     container 'alexeyebi/snpeff'
 
     input:
@@ -205,8 +205,7 @@ process annotate_snps {
 
     script:
     """
-    cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > \
-    ${run_id}.newchr.vcf
+    cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${run_id}.newchr.vcf
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${run_id}.newchr.vcf > ${run_id}.annot.vcf
     """
 }
