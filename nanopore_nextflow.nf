@@ -24,7 +24,7 @@ process download_fastq {
     input:
     tuple sampleId, file(input_file) from samples_ch
     output:
-    file "${sampleId}_1.fastq.gz" into fastq_ch
+    tuple sampleId, file("${sampleId}_1.fastq.gz") into fastq_ch
 
     script:
     """
@@ -42,10 +42,10 @@ process cut_adapters {
     
     input:
 //    path input_file from params.INPUT
-    file input_file from fastq_ch
+    tuple sampleId, file(input_file) from fastq_ch
     
     output:
-    path 'trimmed.fastq' into trimmed_ch
+    tuple sampleId, path('trimmed.fastq') into trimmed_ch
     
     script:
     """
@@ -151,14 +151,14 @@ process map_to_reference {
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
     input:
-    path trimmed from trimmed_ch
-    path ref from params.SARS2_FA
-    val run_id from params.RUN_ID
+    tuple run_id, path(trimmed) from trimmed_ch
+    path(ref) from params.SARS2_FA
+    // val run_id from params.RUN_ID
     
     output:
-    path "${run_id}.bam" into sars2_aligned_reads_ch
+    tuple run_id, path("${run_id}.bam") into sars2_aligned_reads_ch
     path("${run_id}.bam")
-    path "${run_id}.vcf" into vcf_ch
+    tuple run_id, path("${run_id}.vcf") into vcf_ch
     
     script:
     """
@@ -175,8 +175,8 @@ process check_coverage {
     container 'alexeyebi/bowtie2_samtools'
 
     input:
-    path bam from sars2_aligned_reads_ch
-    val run_id from params.RUN_ID
+    tuple run_id, path(bam) from sars2_aligned_reads_ch
+    // val run_id from params.RUN_ID
     path sars2_fasta from params.SARS2_FA
 
     output:
@@ -197,8 +197,8 @@ process annotate_snps {
     container 'alexeyebi/snpeff'
 
     input:
-    path vcf from vcf_ch
-    val run_id from params.RUN_ID
+    tuple run_id, path(vcf) from vcf_ch
+    // val run_id from params.RUN_ID
 
     output:
     path("${run_id}.annot.vcf")
