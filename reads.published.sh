@@ -12,4 +12,4 @@ export TOWER_ACCESS_TOKEN=eyJ0aWQiOiA0MTE1fS5hZjhlZjYyMmI2NWFlZjE0YzY1ZWY5ODNiMj
 export GOOGLE_APPLICATION_CREDENTIALS=~/gcp-nf/nextflow-service-account-private-key.json
 
 ~/gcp-nf/nextflow -C ~/gcp-nf/gls/nextflow.config run ~/ENA_SARS_Cov2_nanopore/nanopore_input.nf -w gs://prj-int-dev-covid19-nf-gls/nanopore_input -profile gls -with-tower --resume
-~/gcp-nf/nextflow -C ~/gcp-nf/gls/nextflow.config run ~/ENA_SARS_Cov2_nanopore/nanopore_nextflow.nf -w gs://prj-int-dev-covid19-nf-gls/nanopore -profile gls --resume -with-tower -with-dag flowchart.png
+~/gcp-nf/nextflow -C ~/gcp-nf/gls/nextflow.config run ~/ENA_SARS_Cov2_nanopore/nanopore_nextflow.nf -w gs://prj-int-dev-covid19-nf-gls/nanopore -profile gls --resume -with-tower

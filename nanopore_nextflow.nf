@@ -169,7 +169,7 @@ process map_to_reference {
     samtools index -@ ${task.cpus} ${sampleId}.bam
     bam_to_vcf.py -b ${sampleId}.bam -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
     samtools mpileup -a -A -Q 0 -d 8000 -f ${ref} ${sampleId}.bam > ${sampleId}.pileup
-    cat ${sampleId}.pileup | awk '{print \\\$2,","\\\$3,","\\\$4}' > ${sampleId}.coverage
+    cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     """
 }
 /*
