@@ -197,8 +197,8 @@ process check_coverage {
 */
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
-    cpus 4
-    memory '4 GB'
+    cpus 8
+    memory '8 GB'
     container 'alexeyebi/snpeff'    // nfcore/snpeff
 
     input:
@@ -209,8 +209,9 @@ process annotate_snps {
     file("${sampleId}.annot.vcf")
 
     script:
+//    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
     cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
+    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
