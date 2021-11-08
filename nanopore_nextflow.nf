@@ -160,20 +160,24 @@ process map_to_reference {
     tuple sampleId, file("${sampleId}.bam") into sars2_aligned_reads_ch
     file("${sampleId}.bam")
     tuple sampleId, file("${sampleId}.vcf") into vcf_ch
+    file("${sampleId}.pileup")
+    file("${sampleId}.coverage")
     
     script:
     """
     minimap2 -Y -t ${task.cpus} -x map-ont -a ${ref} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
     samtools index -@ ${task.cpus} ${sampleId}.bam
     bam_to_vcf.py -b ${sampleId}.bam -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
+    samtools mpileup -a -A -Q 0 -d 8000 -f ${ref} ${sampleId}.bam > ${sampleId}.pileup
+    cat ${sampleId}.pileup | awk '{print \\\$2,","\\\$3,","\\\$4}' > ${sampleId}.coverage
     """
 }
-
+/*
 process check_coverage {
     publishDir params.OUTDIR, mode:'copy'
     cpus 4
     memory '4 GB'
-    container 'alexeyebi/bowtie2_samtools'
+    container 'davidyuyuan/samtools:dlf'    // 'alexeyebi/bowtie2_samtools' // staphb/samtools
 
     input:
     tuple sampleId, file(bam) from sars2_aligned_reads_ch
@@ -190,12 +194,12 @@ process check_coverage {
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     """
 }
-
+*/
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
     cpus 4
     memory '4 GB'
-    container 'alexeyebi/snpeff'
+    container 'alexeyebi/snpeff'    // nfcore/snpeff
 
     input:
     tuple sampleId, file(vcf) from vcf_ch
