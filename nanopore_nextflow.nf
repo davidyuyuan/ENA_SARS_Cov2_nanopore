@@ -147,8 +147,8 @@ process bam_to_vcf {
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
 
-    cpus 4 /* more is better, parallelizes very well*/
-    memory '4 GB'
+    cpus 8 /* more is better, parallelizes very well*/
+    memory '8 GB'
     container 'alexeyebi/ena-sars-cov2-nanopore'
     
     input:
@@ -157,7 +157,7 @@ process map_to_reference {
     // val run_id from params.RUN_ID
     
     output:
-    tuple sampleId, file("${sampleId}.bam") into sars2_aligned_reads_ch
+//    tuple sampleId, file("${sampleId}.bam") into sars2_aligned_reads_ch
     file("${sampleId}.bam")
     tuple sampleId, file("${sampleId}.vcf") into vcf_ch
     file("${sampleId}.pileup")
