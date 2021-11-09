@@ -91,7 +91,7 @@ process annotate_snps {
     tuple sampleId, file(vcf) from vcf_ch
 
     output:
-    ${sampleId}.newchr.vcf  // comment out for debugging. newchr.vcf is temp file. file("${sampleId}.annot.vcf")
+    file("${sampleId}.newchr.vcf")  // comment out for debugging. newchr.vcf is temp file. file("${sampleId}.annot.vcf")
 
     script:
 //    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
