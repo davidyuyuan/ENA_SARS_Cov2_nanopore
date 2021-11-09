@@ -28,9 +28,10 @@ process download_fastq {
     tuple sampleId, file("${sampleId}_1.fastq.gz") into fastq_ch
 
     script:
-    // wget -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+    //
+    // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
-    curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
+    wget -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
 }
 
