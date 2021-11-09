@@ -85,18 +85,18 @@ process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
     cpus 8
     memory '8 GB'
-//    container 'alexeyebi/snpeff'    // nfcore/snpeff
+    container 'alexeyebi/snpeff'
 
     input:
     tuple sampleId, file(vcf) from vcf_ch
 
     output:
-    file("${sampleId}.newchr.vcf")  // comment out for debugging. newchr.vcf is temp file. file("${sampleId}.annot.vcf")
+    file("${sampleId}.annot.vcf")
 
     script:
-//    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
 //    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
     cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
+    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
