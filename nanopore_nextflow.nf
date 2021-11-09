@@ -17,8 +17,7 @@ Channel
     .set { samples_ch }
 
 process download_fastq {
-//    container 'davidyuyuan/samtools:dlf'
-    // Use GLS default 1 CPU 1 GB
+    // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
     // cpus 2
     // memory '1 GB'
 
@@ -28,7 +27,6 @@ process download_fastq {
     tuple sampleId, file("${sampleId}_1.fastq.gz") into fastq_ch
 
     script:
-    //
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
     wget -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
@@ -200,7 +198,7 @@ process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
     cpus 8
     memory '8 GB'
-    container 'alexeyebi/snpeff'    // nfcore/snpeff
+//    container 'alexeyebi/snpeff'    // nfcore/snpeff
 
     input:
     tuple sampleId, file(vcf) from vcf_ch
