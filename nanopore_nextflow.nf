@@ -17,7 +17,7 @@ Channel
     .set { samples_ch }
 
 process download_fastq {
-    container 'davidyuyuan/samtools:dlf'
+//    container 'davidyuyuan/samtools:dlf'
     // Use GLS default 1 CPU 1 GB
     // cpus 2
     // memory '1 GB'
