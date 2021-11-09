@@ -29,7 +29,7 @@ process download_fastq {
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
-    wget -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+    wget -t 3 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
 }
 
