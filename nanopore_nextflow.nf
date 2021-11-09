@@ -54,95 +54,6 @@ process cut_adapters {
     """
 }
 
-/*
- * Map reads to SARS-CoV-2 reference genome
- */ 
-/*
-process map_to_reference {
-    publishDir params.OUTDIR, mode:'copy'
-
-    cpus 10 // more is better, parallelizes very well
-    memory '10 GB'
-    container 'alexeyebi/ena-sars-cov2-nanopore'
-    
-    input:
-    path trimmed from trimmed_ch
-    path ref from params.SARS2_FA
-    val run_id from params.RUN_ID
-    
-    output:
-    path "${run_id}.bam" into sars2_aligned_reads_ch, sars2_aligned_reads_ch2
-    path("${run_id}.bam")
-    
-    script:
-    """
-    minimap2 -Y -t ${task.cpus} -x map-ont -a ${ref} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${run_id}.bam
-    """
-}
-
-process check_coverage {
-    publishDir params.OUTDIR, mode:'copy'
-    cpus 2
-    memory '4 GB'
-    container 'alexeyebi/bowtie2_samtools'
-
-    input:
-    path bam from sars2_aligned_reads_ch
-    val run_id from params.RUN_ID
-    path sars2_fasta from params.SARS2_FA
-
-    output:
-    path "${run_id}.pileup" into check_coverage_ch
-    path("${run_id}.pileup")
-
-    script:
-    """
-    samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${bam} > \
-    ${run_id}.pileup
-    """
-}
-
-process make_small_file_with_coverage {
-    publishDir params.OUTDIR, mode:'copy'
-    cpus 2
-    memory '4 GB'
-    container 'alexeyebi/bowtie2_samtools'
-
-    input:
-    path pileup from check_coverage_ch
-    val run_id from params.RUN_ID
-
-    output:
-    path("${run_id}.coverage")
-
-    script:
-    """
-    cat ${pileup} | awk '{print \$2,","\$3,","\$4}' > ${run_id}.coverage
-    """
-}
-
-process bam_to_vcf {
-    tag '$run_id'
-    publishDir params.OUTDIR, mode:'copy'
-    cpus 10
-    memory '10 GB'
-    container 'alexeyebi/ena-sars-cov2-nanopore'
-
-    input:
-    path bam from sars2_aligned_reads_ch2
-    path ref from params.SARS2_FA
-    val run_id from params.RUN_ID
-    
-    output:
-    path "${run_id}.vcf" into vcf_ch
-
-    script:
-    """
-    samtools index -@ ${task.cpus} ${bam}
-    bam_to_vcf.py -b ${bam} -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${run_id}.vcf
-    """
-}
-*/
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
 
@@ -153,10 +64,8 @@ process map_to_reference {
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
     path(ref) from params.SARS2_FA
-    // val run_id from params.RUN_ID
     
     output:
-//    tuple sampleId, file("${sampleId}.bam") into sars2_aligned_reads_ch
     file("${sampleId}.bam")
     tuple sampleId, file("${sampleId}.vcf") into vcf_ch
     file("${sampleId}.pileup")
@@ -171,29 +80,7 @@ process map_to_reference {
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     """
 }
-/*
-process check_coverage {
-    publishDir params.OUTDIR, mode:'copy'
-    cpus 4
-    memory '4 GB'
-    container 'davidyuyuan/samtools:dlf'    // 'alexeyebi/bowtie2_samtools' // staphb/samtools
 
-    input:
-    tuple sampleId, file(bam) from sars2_aligned_reads_ch
-    // val run_id from params.RUN_ID
-    path(sars2_fasta) from params.SARS2_FA
-
-    output:
-    file("${sampleId}.pileup")
-    file("${sampleId}.coverage")
-
-    script:
-    """
-    samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${bam} > ${sampleId}.pileup
-    cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
-    """
-}
-*/
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
     cpus 8
@@ -202,15 +89,14 @@ process annotate_snps {
 
     input:
     tuple sampleId, file(vcf) from vcf_ch
-    // val run_id from params.RUN_ID
 
     output:
     file("${sampleId}.annot.vcf")
 
     script:
 //    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
+//    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
     cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
