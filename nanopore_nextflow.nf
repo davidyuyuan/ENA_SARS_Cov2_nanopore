@@ -6,7 +6,8 @@
  * thresholds set for the consensus calling
  */
 
-params.OUTDIR = "results"
+// params.OUTDIR = "results"
+params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/results"
 params.SARS2_FA = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa"
 params.index = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
 
