@@ -6,7 +6,6 @@
  * thresholds set for the consensus calling
  */
 
-// params.OUTDIR = "results"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/results"
 params.SARS2_FA = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa"
 params.index = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
@@ -96,9 +95,9 @@ process annotate_snps {
     file("${sampleId}.newchr.vcf")
 
     script:
+        // java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
 //    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
     cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
