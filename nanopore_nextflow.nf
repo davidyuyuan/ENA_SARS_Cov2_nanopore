@@ -92,6 +92,7 @@ process annotate_snps {
 
     output:
     file("${sampleId}.annot.vcf")
+    file("${sampleId}.newchr.vcf")
 
     script:
 //    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
