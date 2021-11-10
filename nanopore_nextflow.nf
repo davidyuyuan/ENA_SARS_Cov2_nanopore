@@ -64,8 +64,8 @@ process map_to_reference {
     
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
-    file(sars2_fasta) from params.SARS2_FA
-    file(sars2_fasta_fai) from params.SARS2_FA_FAI
+    path(sars2_fasta) from params.SARS2_FA
+    path(sars2_fasta_fai) from params.SARS2_FA_FAI
     
     output:
     tuple sampleId, file("${sampleId}.vcf.gz") into vcf_ch
@@ -120,8 +120,8 @@ process create_consensus_sequence {
 
     input:
     tuple sampleId, file(vcf), file(coverage) from vcf_ch2
-    file(sars2_fasta) from params.SARS2_FA
-    file(sars2_fasta_fai) from params.SARS2_FA_FAI
+    path(sars2_fasta) from params.SARS2_FA
+    path(sars2_fasta_fai) from params.SARS2_FA_FAI
 
     output:
     file("${sampleId}_consensus.fasta.gz")
