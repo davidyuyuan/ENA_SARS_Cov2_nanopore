@@ -8,6 +8,7 @@
 
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/results"
 params.SARS2_FA = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa"
+params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 params.index = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
 
 Channel
@@ -63,12 +64,13 @@ process map_to_reference {
     
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
-    path(ref) from params.SARS2_FA
+    file(ref) from params.SARS2_FA
     
     output:
     file("${sampleId}.bam")
-    val sampleId into vcf_ch1
-    path "${sampleId}.vcf" into vcf_ch2
+    tuple sampleId, file("${sampleId}.vcf.gz") into vcf_ch
+    tuple sampleId, file("${sampleId}.vcf.gz"), file("${sampleId}.coverage") into vcf_ch2
+    file("${sampleId}_filtered.vcf.gz")
     file("${sampleId}.pileup")
     file("${sampleId}.coverage")
     
@@ -77,6 +79,9 @@ process map_to_reference {
     minimap2 -Y -t ${task.cpus} -x map-ont -a ${ref} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
     samtools index -@ ${task.cpus} ${sampleId}.bam
     bam_to_vcf.py -b ${sampleId}.bam -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
+    filtervcf.py -i ${sampleId}.vcf -o ${sampleId}_filtered.vcf
+    bgzip ${sampleId}.vcf
+    bgzip ${sampleId}_filtered.vcf
     samtools mpileup -a -A -Q 0 -d 8000 -f ${ref} ${sampleId}.bam > ${sampleId}.pileup
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     """
@@ -89,8 +94,7 @@ process annotate_snps {
     container 'alexeyebi/snpeff'
 
     input:
-    val sampleId from vcf_ch1
-    path vcf from vcf_ch2
+    tuple sampleId, file(vcf) from vcf_ch
 
     output:
     file("${sampleId}.annot.vcf")
@@ -99,7 +103,29 @@ process annotate_snps {
     script:
 //    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
-    cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
+    zcat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
+    """
+}
+
+process create_consensus_sequence {
+    publishDir params.OUTDIR, mode:'copy'
+    cpus 1
+    memory '30 GB'
+    container 'alexeyebi/ena-sars-cov2-nanopore'
+
+    input:
+    tuple sampleId, file(vcf), file(coverage) from vcf_ch2
+    file(sars2_fasta) from params.SARS2_FA
+    file(sars2_fasta_fai) from params.SARS2_FA_FAI
+
+    output:
+    file("${sampleId}_consensus.fasta.gz")
+
+    script:
+    """
+    tabix ${vcf}
+    vcf2consensus.py -v ${vcf} -d ${coverage} -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
+    bgzip ${sampleId}_consensus.fasta
     """
 }
