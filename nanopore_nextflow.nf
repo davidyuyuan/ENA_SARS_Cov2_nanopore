@@ -111,26 +111,3 @@ process annotate_snps {
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
-/*
-process create_consensus_sequence {
-    publishDir params.OUTDIR, mode:'copy'
-    cpus 1
-    memory '30 GB'
-    container 'alexeyebi/ena-sars-cov2-nanopore'
-
-    input:
-    tuple sampleId, file(vcf), file(coverage) from vcf_ch2
-    path(sars2_fasta) from params.SARS2_FA
-    path(sars2_fasta_fai) from params.SARS2_FA_FAI
-
-    output:
-    file("${sampleId}_consensus.fasta.gz")
-
-    script:
-    """
-    tabix ${vcf}
-    vcf2consensus.py -v ${vcf} -d ${coverage} -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
-    bgzip ${sampleId}_consensus.fasta
-    """
-}
-*/
