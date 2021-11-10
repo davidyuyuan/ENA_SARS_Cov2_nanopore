@@ -67,7 +67,8 @@ process map_to_reference {
     
     output:
     file("${sampleId}.bam")
-    tuple sampleId, file("${sampleId}.vcf") into vcf_ch
+    val sampleId into vcf_ch1
+    path "${sampleId}.vcf" into vcf_ch2
     file("${sampleId}.pileup")
     file("${sampleId}.coverage")
     
@@ -88,16 +89,17 @@ process annotate_snps {
     container 'alexeyebi/snpeff'
 
     input:
-    tuple sampleId, file(vcf) from vcf_ch
+    val sampleId from vcf_ch1
+    path vcf from vcf_ch2
 
     output:
     file("${sampleId}.annot.vcf")
     file("${sampleId}.newchr.vcf")
 
     script:
-        // java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
 //    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
     cat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
+    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
