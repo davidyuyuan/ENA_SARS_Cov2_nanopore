@@ -64,26 +64,30 @@ process map_to_reference {
     
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
-    file(ref) from params.SARS2_FA
+    file(sars2_fasta) from params.SARS2_FA
+    file(sars2_fasta_fai) from params.SARS2_FA_FAI
     
     output:
-    file("${sampleId}.bam")
     tuple sampleId, file("${sampleId}.vcf.gz") into vcf_ch
-    tuple sampleId, file("${sampleId}.vcf.gz"), file("${sampleId}.coverage") into vcf_ch2
+    file("${sampleId}.bam")
     file("${sampleId}_filtered.vcf.gz")
     file("${sampleId}.pileup")
     file("${sampleId}.coverage")
+    file("${sampleId}_consensus.fasta.gz")
     
     script:
     """
-    minimap2 -Y -t ${task.cpus} -x map-ont -a ${ref} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
+    minimap2 -Y -t ${task.cpus} -x map-ont -a ${sars2_fasta} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
     samtools index -@ ${task.cpus} ${sampleId}.bam
-    bam_to_vcf.py -b ${sampleId}.bam -r ${ref} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
+    bam_to_vcf.py -b ${sampleId}.bam -r ${sars2_fasta} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
     filtervcf.py -i ${sampleId}.vcf -o ${sampleId}_filtered.vcf
     bgzip ${sampleId}.vcf
     bgzip ${sampleId}_filtered.vcf
-    samtools mpileup -a -A -Q 0 -d 8000 -f ${ref} ${sampleId}.bam > ${sampleId}.pileup
+    samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${sampleId}.bam > ${sampleId}.pileup
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
+    tabix ${sampleId}.vcf.gz
+    vcf2consensus.py -v ${sampleId}.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
+    bgzip ${sampleId}_consensus.fasta
     """
 }
 
@@ -107,7 +111,7 @@ process annotate_snps {
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
-
+/*
 process create_consensus_sequence {
     publishDir params.OUTDIR, mode:'copy'
     cpus 1
@@ -129,3 +133,4 @@ process create_consensus_sequence {
     bgzip ${sampleId}_consensus.fasta
     """
 }
+*/
