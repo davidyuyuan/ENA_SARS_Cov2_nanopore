@@ -60,7 +60,7 @@ process map_to_reference {
 
     cpus 8 /* more is better, parallelizes very well*/
     memory '8 GB'
-    container 'alexeyebi/ena-sars-cov2-nanopore'
+    container 'davidyuyuan/ena-sars-cov2-nanopore'
     
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
