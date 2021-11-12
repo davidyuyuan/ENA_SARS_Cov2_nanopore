@@ -68,12 +68,13 @@ process map_to_reference {
     path(sars2_fasta_fai) from params.SARS2_FA_FAI
     
     output:
-    tuple sampleId, file("${sampleId}.vcf.gz") into vcf_ch
+//    tuple sampleId, file("${sampleId}.vcf.gz") into vcf_ch
     file("${sampleId}.bam")
     file("${sampleId}_filtered.vcf.gz")
     file("${sampleId}.pileup")
     file("${sampleId}.coverage")
     file("${sampleId}_consensus.fasta.gz")
+    file("${sampleId}.annot.vcf")
     
     script:
     """
@@ -88,9 +89,11 @@ process map_to_reference {
     tabix ${sampleId}.vcf.gz
     vcf2consensus.py -v ${sampleId}.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
     bgzip ${sampleId}_consensus.fasta
+    zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
+    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
-
+/*
 process annotate_snps {
     publishDir params.OUTDIR, mode:'copy'
     cpus 8
@@ -111,3 +114,4 @@ process annotate_snps {
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
+*/
