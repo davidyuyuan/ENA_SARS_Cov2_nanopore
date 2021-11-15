@@ -30,7 +30,7 @@ process download_fastq {
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
-    wget -t 3 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+    wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
 }
 
@@ -68,7 +68,6 @@ process map_to_reference {
     path(sars2_fasta_fai) from params.SARS2_FA_FAI
     
     output:
-//    tuple sampleId, file("${sampleId}.vcf.gz") into vcf_ch
     file("${sampleId}.bam")
     file("${sampleId}_filtered.vcf.gz")
     file("${sampleId}.pileup")
@@ -93,25 +92,3 @@ process map_to_reference {
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
 }
-/*
-process annotate_snps {
-    publishDir params.OUTDIR, mode:'copy'
-    cpus 8
-    memory '8 GB'
-    container 'alexeyebi/snpeff'
-
-    input:
-    tuple sampleId, file(vcf) from vcf_ch
-
-    output:
-    file("${sampleId}.annot.vcf")
-    file("${sampleId}.newchr.vcf")
-
-    script:
-//    java -Xmx4g -jar /home/biodocker/bin/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
-    """
-    zcat ${vcf} | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
-    """
-}
-*/
