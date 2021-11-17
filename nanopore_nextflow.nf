@@ -18,7 +18,6 @@ process download_fastq {
     // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
     // cpus 2
     // memory '1 GB'
-    executor 'local'
 
     input:
     tuple sampleId, file(input_file) from samples_ch
@@ -65,8 +64,8 @@ process map_to_reference {
     memory { 8.GB * task.attempt } //'8 GB'
     container 'davidyuyuan/ena-sars-cov2-nanopore'
 
-    echo true
-    afterScript 'echo After script is run!'
+//    echo true
+//    afterScript 'echo After script is run!'
 
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
