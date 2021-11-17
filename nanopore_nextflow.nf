@@ -57,8 +57,8 @@ process cut_adapters {
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
-    errorStrategy 'retry'
-    maxRetries 3
+//    errorStrategy 'retry'
+//    maxRetries 3
 
     cpus 8 /* more is better, parallelizes very well*/
     memory { 8.GB * task.attempt } //'8 GB'
