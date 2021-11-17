@@ -18,6 +18,7 @@ process download_fastq {
     // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
     // cpus 2
     // memory '1 GB'
+    executor 'local'
 
     input:
     tuple sampleId, file(input_file) from samples_ch
@@ -46,11 +47,11 @@ process cut_adapters {
     tuple sampleId, file(input_file) from fastq_ch
     
     output:
-    tuple sampleId, file('trimmed.fastq') into trimmed_ch
+    tuple sampleId, file("${sampleId}.trimmed.fastq") into trimmed_ch
     
     script:
     """
-    cutadapt -u 30 -u -30 -o trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
+    cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
     """
 }
 
