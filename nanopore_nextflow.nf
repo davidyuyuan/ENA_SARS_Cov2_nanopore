@@ -1,23 +1,20 @@
 #!/usr/bin/env nextflow
 
-/*
- * Define some parameters in order to specify the refence genomes
- * barcodes to be checked in the demultiplexing process and the coverage
- * thresholds set for the consensus calling
- */
-
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/results"
 params.SARS2_FA = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa"
 params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
-params.index = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
+params.INDEX = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
+params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/storeDir"
 
 Channel
-    .fromPath(params.index)
+    .fromPath(params.INDEX)
     .splitCsv(header:true, sep:'\t')
     .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
     .set { samples_ch }
 
 process download_fastq {
+    storeDir params.STOREDIR
+
     // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
     // cpus 2
     // memory '1 GB'
@@ -38,11 +35,13 @@ process download_fastq {
  * Trim 30 nucleotides of each end of the reads using cutadapt to ensure that primer derived sequences are not used to generate a consensus sequence
  */  
 process cut_adapters {
+    storeDir params.STOREDIR
+
     // Use GLS default 1 CPU 1 GB
     // cpus 2
     // memory '1 GB'
     container 'kfdrc/cutadapt'
-    
+
     input:
     tuple sampleId, file(input_file) from fastq_ch
     
@@ -57,11 +56,17 @@ process cut_adapters {
 
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
+    storeDir params.STOREDIR
+    errorStrategy 'retry'
+    maxRetries 3
 
     cpus 8 /* more is better, parallelizes very well*/
-    memory '8 GB'
+    memory { 8.GB * task.attempt } //'8 GB'
     container 'davidyuyuan/ena-sars-cov2-nanopore'
-    
+
+    echo true
+    afterScript 'echo After script is run!'
+
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
     path(sars2_fasta) from params.SARS2_FA
