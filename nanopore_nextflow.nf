@@ -57,16 +57,12 @@ process cut_adapters {
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
-//    errorStrategy 'retry'
-//    maxRetries 3
 
     cpus 8 /* more is better, parallelizes very well*/
     memory { 8.GB * task.attempt } //'8 GB'
     container 'davidyuyuan/ena-sars-cov2-nanopore'
-
-//    echo true
-//    afterScript 'echo After script is run!'
-
+    disk '100 GB'
+    
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
     path(sars2_fasta) from params.SARS2_FA
@@ -75,7 +71,6 @@ process map_to_reference {
     output:
     file("${sampleId}.bam")
     file("${sampleId}_filtered.vcf.gz")
-    file("${sampleId}.pileup")
     file("${sampleId}.coverage")
     file("${sampleId}_consensus.fasta.gz")
     file("${sampleId}.annot.vcf")
