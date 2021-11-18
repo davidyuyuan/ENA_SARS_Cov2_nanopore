@@ -61,7 +61,7 @@ process map_to_reference {
     cpus 8 /* more is better, parallelizes very well*/
     memory { 8.GB * task.attempt } //'8 GB'
     container 'davidyuyuan/ena-sars-cov2-nanopore'
-    disk '100 GB'
+//    disk '100 GB'
     
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
