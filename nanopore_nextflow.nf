@@ -62,6 +62,9 @@ process map_to_reference {
     memory { 8.GB * task.attempt } //'8 GB'
     container 'davidyuyuan/ena-sars-cov2-nanopore'
 //    disk '100 GB'
+
+    errorStrategy = 'retry'
+    maxRetries 3
     
     input:
     tuple sampleId, file(trimmed) from trimmed_ch
