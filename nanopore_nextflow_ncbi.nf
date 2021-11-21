@@ -35,9 +35,9 @@ process download_fastq {
     // memory '1 GB'
 
     input:
-    tuple sampleId, file(input_file)
+    tuple val(sampleId), file(input_file)
     output:
-    tuple sampleId, file("${sampleId}_1.fastq.gz")
+    tuple val(sampleId), file("${sampleId}_1.fastq.gz")
 
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
@@ -55,10 +55,10 @@ process cut_adapters {
     container 'kfdrc/cutadapt'
 
     input:
-    tuple sampleId, file(input_file)
+    tuple val(sampleId), file(input_file)
 
     output:
-    tuple sampleId, file("${sampleId}.trimmed.fastq")
+    tuple val(sampleId), file("${sampleId}.trimmed.fastq")
 
     script:
     """
@@ -78,7 +78,7 @@ process map_to_reference {
     maxRetries 3
 
     input:
-    tuple sampleId, file(trimmed) //from trimmed_ch
+    tuple val(sampleId), file(trimmed) //from trimmed_ch
     path(sars2_fasta) //from params.SARS2_FA
     path(sars2_fasta_fai) //from params.SARS2_FA_FAI
 
