@@ -17,7 +17,7 @@ import nextflow.splitter.CsvSplitter
 nextflow.enable.dsl=2
 
 
-static List<String> fetchRunAccessions(Strring tsv ) {
+static List<String> fetchRunAccessions(String tsv ) {
     CsvSplitter splitter = new CsvSplitter().options( header:true, sep:'\t' )
     BufferedReader reader = new BufferedReader( new FileReader( tsv ) )
     splitter.parseHeader( reader )
