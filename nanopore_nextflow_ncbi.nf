@@ -33,6 +33,6 @@ def fetchRunAccessions(String tsv ) {
 workflow {
     accessions = fetchRunAccessions(params.INDEX)
     Channel
-            .fromSRA( accessions )
+            .fromSRA( accessions, apikey:'ac733cb2dabffcde3f5254af22d1fee45709' )
             .view()
 }
