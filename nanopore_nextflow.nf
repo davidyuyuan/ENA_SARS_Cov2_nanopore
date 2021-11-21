@@ -6,11 +6,22 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/storeDir"
 
-Channel
-    .fromPath(params.INDEX)
-    .splitCsv(header:true, sep:'\t')
-    .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
-    .set { samples_ch }
+import nextflow.splitter.CsvSplitter
+nextflow.enable.dsl=2
+
+
+def fetchRunAccessions(String tsv ) {
+    CsvSplitter splitter = new CsvSplitter().options( header:true, sep:'\t' )
+    BufferedReader reader = new BufferedReader( new FileReader( tsv ) )
+    splitter.parseHeader( reader )
+
+    List<String> run_accessions = [] as List<String>
+    Map<String,String> row
+    while( row = splitter.fetchRecord( reader ) ) {
+        run_accessions.add( row['run_accession'] )
+    }
+    return run_accessions
+}
 
 process download_fastq {
     storeDir params.STOREDIR
@@ -20,9 +31,9 @@ process download_fastq {
     // memory '1 GB'
 
     input:
-    tuple sampleId, file(input_file) from samples_ch
+    tuple val(sampleId), file(input_file)
     output:
-    tuple sampleId, file("${sampleId}_1.fastq.gz") into fastq_ch
+    tuple val(sampleId), file("${sampleId}_1.fastq.gz")
 
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
@@ -31,9 +42,6 @@ process download_fastq {
     """
 }
 
-/*
- * Trim 30 nucleotides of each end of the reads using cutadapt to ensure that primer derived sequences are not used to generate a consensus sequence
- */  
 process cut_adapters {
     storeDir params.STOREDIR
 
@@ -43,11 +51,11 @@ process cut_adapters {
     container 'kfdrc/cutadapt'
 
     input:
-    tuple sampleId, file(input_file) from fastq_ch
-    
+    tuple val(sampleId), file(input_file)
+
     output:
-    tuple sampleId, file("${sampleId}.trimmed.fastq") into trimmed_ch
-    
+    tuple val(sampleId), file("${sampleId}.trimmed.fastq")
+
     script:
     """
     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
@@ -64,19 +72,19 @@ process map_to_reference {
 
     errorStrategy = 'retry'
     maxRetries 3
-    
+
     input:
-    tuple sampleId, file(trimmed) from trimmed_ch
-    path(sars2_fasta) from params.SARS2_FA
-    path(sars2_fasta_fai) from params.SARS2_FA_FAI
-    
+    tuple val(sampleId), file(trimmed)
+    path(sars2_fasta)
+    path(sars2_fasta_fai)
+
     output:
     file("${sampleId}.bam")
     file("${sampleId}_filtered.vcf.gz")
     file("${sampleId}.coverage")
     file("${sampleId}_consensus.fasta.gz")
     file("${sampleId}.annot.vcf")
-    
+
     script:
     """
     minimap2 -Y -t ${task.cpus} -x map-ont -a ${sars2_fasta} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
@@ -93,4 +101,19 @@ process map_to_reference {
     zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
+}
+
+workflow {
+//    Requires local input.
+//    accessions = fetchRunAccessions(params.INDEX)
+//    data = Channel.fromSRA( accessions )
+//    data.view()
+    data = Channel
+            .fromPath(params.INDEX)
+            .splitCsv(header:true, sep:'\t')
+            .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
+
+    download_fastq(data)
+    cut_adapters(download_fastq.out)
+    map_to_reference(cut_adapters.out, params.SARS2_FA, params.SARS2_FA_FAI)
 }

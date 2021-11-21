@@ -78,9 +78,9 @@ process map_to_reference {
     maxRetries 3
 
     input:
-    tuple val(sampleId), file(trimmed) //from trimmed_ch
-    path(sars2_fasta) //from params.SARS2_FA
-    path(sars2_fasta_fai) //from params.SARS2_FA_FAI
+    tuple val(sampleId), file(trimmed)
+    path(sars2_fasta)
+    path(sars2_fasta_fai)
 
     output:
     file("${sampleId}.bam")
