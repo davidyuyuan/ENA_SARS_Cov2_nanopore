@@ -31,8 +31,13 @@ def fetchRunAccessions(String tsv ) {
 }
 
 workflow {
-    accessions = fetchRunAccessions(params.INDEX)
+//    accessions = fetchRunAccessions(params.INDEX)
+//    Channel
+//            .fromSRA( accessions )
+//            .view()
     Channel
-            .fromSRA( accessions )
-            .view()
+            .fromPath(params.INDEX)
+            .splitCsv(header:true, sep:'\t')
+            .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }.view()
+//            .set { samples_ch }
 }
