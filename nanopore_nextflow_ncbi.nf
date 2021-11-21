@@ -35,9 +35,10 @@ workflow {
 //    Channel
 //            .fromSRA( accessions )
 //            .view()
-    Channel
+    data = Channel
             .fromPath(params.INDEX)
             .splitCsv(header:true, sep:'\t')
-            .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }.view()
+            .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 //            .set { samples_ch }
+    data.view()
 }
