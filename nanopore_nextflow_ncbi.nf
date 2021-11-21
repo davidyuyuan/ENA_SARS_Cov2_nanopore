@@ -71,11 +71,11 @@ process map_to_reference {
     storeDir params.STOREDIR
 
     cpus 8 /* more is better, parallelizes very well*/
-    memory { 8.GB * task.attempt } //'8 GB'
+    memory '8 GB'       //{ 8.GB * task.attempt }
     container 'davidyuyuan/ena-sars-cov2-nanopore'
 
-    errorStrategy = 'retry'
-    maxRetries 3
+//    errorStrategy = 'retry'
+//    maxRetries 3
 
     input:
     tuple val(sampleId), file(trimmed)
