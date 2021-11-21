@@ -32,5 +32,5 @@ def fetchRunAccessions(String tsv ) {
 
 workflow {
     accessions = fetchRunAccessions(params.INDEX)
-    Channel.fromSRA(accessions, protocol:'http').view()
+    Channel.fromSRA(accessions).view()
 }
