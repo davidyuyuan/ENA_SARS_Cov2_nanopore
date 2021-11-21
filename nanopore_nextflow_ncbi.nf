@@ -10,7 +10,7 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 //params.INDEX = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
 //params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/storeDir"
 params.OUTDIR = "gs://ncbi-sra-covid-input/results"
-params.INDEX = "gs:/ncbi-sra-covid-input/data/nanopore.index.short.tsv"
+params.INDEX = "gs://ncbi-sra-covid-input/data/nanopore.index.short.tsv"
 params.STOREDIR = "gs://ncbi-sra-covid-input/storeDir"
 
 import nextflow.splitter.CsvSplitter
