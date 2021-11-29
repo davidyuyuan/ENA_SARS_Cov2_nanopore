@@ -11,8 +11,9 @@ cd "${home_dir}" || exit
 #scp -i ~/.ssh/david-yuan-tsi.pem centos@45.88.81.197:/mnt/result/from_gcs/nanopore/new/ERR4080474* ${home_dir}
 #scp -i ~/.ssh/david-yuan-tsi.pem centos@45.88.81.197:/mnt/result/from_gcs/nanopore/new/ERR4080475* ${home_dir}
 
-for filename in $(basename "${home_dir}"/*)
+for f in "${home_dir}"/*
 do
+  filename=$(basename "${f}")
   run_accession=$(echo "${filename}" | cut -d '.' -f 1 | cut -d '_' -f 1)
   mkdir -p "${home_dir}/${run_accession}_output"
 
@@ -28,8 +29,9 @@ do
 done
 
 staging_dir="${home_dir}/../staging" && mkdir -p ${staging_dir}
-for filename in $(basename "${home_dir}"/*)
+for f in "${home_dir}"/*
 do
+  filename=$(basename "${f}")
   run_accession=$(echo "${filename}" | cut -d '_' -f 1)
   output_tgz=${run_accession}_output.tar.gz
   tar -zcvf "${home_dir}/${output_tgz}" "${run_accession}_output" && rm -R "${run_accession}_output" && mv "${home_dir}/${output_tgz}" "${staging_dir}"
