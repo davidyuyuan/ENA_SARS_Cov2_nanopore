@@ -4,12 +4,12 @@
 # TODO! To be merged into covid.submit.sh
 #########################################
 
-#home_dir=${1:-'/mnt/result/from_gcs/nanopore/new'}
-#date_submitted=${2:-'2021-11-29'}
-#cd "${home_dir}" || exit
-date_submitted='2021-11-29'
-home_dir='/Users/davidyuan/IdeaProjects/davidyuyuan/ENA_SARS_Cov2_nanopore/results/new'
+home_dir=${1:-'/mnt/result/from_gcs/nanopore/new'}
+date_submitted=${2:-'2021-11-29'}
 cd "${home_dir}" || exit
+#date_submitted='2021-11-29'
+#home_dir='/Users/davidyuan/IdeaProjects/davidyuyuan/ENA_SARS_Cov2_nanopore/results/new'
+#cd "${home_dir}" || exit
 
 staging_dir="${home_dir}/../staging"
 ##############
