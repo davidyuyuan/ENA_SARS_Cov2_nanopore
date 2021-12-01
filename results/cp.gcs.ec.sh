@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# DIR where the current script resides
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 # Install Minoconda with Python 3.9
 curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 chmod +x Miniconda3-latest-Linux-x86_64.sh

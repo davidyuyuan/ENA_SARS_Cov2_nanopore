@@ -79,27 +79,37 @@ process map_to_reference {
     path(sars2_fasta_fai)
 
     output:
-    file("${sampleId}.bam")
-    file("${sampleId}_filtered.vcf.gz")
-    file("${sampleId}.coverage")
-    file("${sampleId}_consensus.fasta.gz")
-    file("${sampleId}.annot.vcf")
+//    file("${sampleId}.bam")
+//    file("${sampleId}_filtered.vcf.gz")
+//    file("${sampleId}.coverage.gz")
+//    file("${sampleId}_consensus.fasta.gz")
+//    file("${sampleId}.annot.vcf.gz")
+    file("${sampleId}_output.tar.gz")
 
     script:
     """
     minimap2 -Y -t ${task.cpus} -x map-ont -a ${sars2_fasta} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
     samtools index -@ ${task.cpus} ${sampleId}.bam
+
     bam_to_vcf.py -b ${sampleId}.bam -r ${sars2_fasta} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
     filtervcf.py -i ${sampleId}.vcf -o ${sampleId}_filtered.vcf
     bgzip ${sampleId}.vcf
     bgzip ${sampleId}_filtered.vcf
+
     samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${sampleId}.bam > ${sampleId}.pileup
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     tabix ${sampleId}.vcf.gz
     vcf2consensus.py -v ${sampleId}.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
+    bgzip ${sampleId}.coverage
     bgzip ${sampleId}_consensus.fasta
+
     zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
     java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
+    bgzip ${sampleId}.annot.vcf
+
+    mkdir -p ${sampleId}_output
+    mv ${sampleId}.bam ${sampleId}_filtered.vcf.gz ${sampleId}.coverage.gz ${sampleId}_consensus.fasta.gz ${sampleId}.annot.vcf.gz ${sampleId}_output
+    tar -zcvf ${sampleId}_output.tar.gz ${sampleId}_output 
     """
 }
 

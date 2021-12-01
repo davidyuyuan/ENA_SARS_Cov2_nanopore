@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+#########################################
+# TODO! To be merged into covid.submit.sh
+#########################################
+
+#home_dir=${1:-'/mnt/result/from_gcs/nanopore/new'}
+#date_submitted=${2:-'2021-11-29'}
+#cd "${home_dir}" || exit
+date_submitted='2021-11-29'
+home_dir='/Users/davidyuan/IdeaProjects/davidyuyuan/ENA_SARS_Cov2_nanopore/results/new'
+cd "${home_dir}" || exit
+
+staging_dir="${home_dir}/../staging"
+##############
+# Additional #
+##############
+# DIR where the current script resides
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+index_tsv="${DIR}/${date_submitted}/nanopore.index.tsv"
+to_be_submitted="${DIR}/${date_submitted}/to_be_submitted.tsv"
+
+true > "${to_be_submitted}"
+for f in "${staging_dir}"/*
+do
+  filename=$(basename "${f}")
+  run_accession=$(echo "${filename}" | cut -d '_' -f 1)
+  sample_accession=$(grep "${run_accession}" "${index_tsv}" | cut -f1-3)
+  printf '%s\t%s\t%s\n' "${run_accession}" "${f}" "${sample_accession}" >> "${to_be_submitted}"
+done
