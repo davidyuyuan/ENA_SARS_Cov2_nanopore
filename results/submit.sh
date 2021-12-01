@@ -13,7 +13,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 index_tsv="${DIR}/${date_submitted}/nanopore.index.tsv"
 to_be_submitted="${DIR}/${date_submitted}/to_be_submitted.tsv"
 
-true > "${to_be_submitted}"
+true > "${to_be_submitted}" || touch "${to_be_submitted}"
 for f in "${staging_dir}"/*
 do
   filename=$(basename "${f}")
