@@ -5,23 +5,25 @@ from datetime import datetime
 from lxml import etree
 import subprocess
 
-to_be_submitted = sys.argv[1]
-snapshot_date = sys.argv[2]
+to_be_submitted = sys.argv[1]   # A TSV list of output TGZ to be submitted
+snapshot_date = sys.argv[2]     # '2021-11-29'
 
 timestamp = datetime.now()
 analysis_date = timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+okays = open('okays.txt', 'w')
 errors = open('errors.txt', 'w')
 with open(to_be_submitted, 'r') as f:
     for line in f:
         line = line.rstrip()
         data = line.split("\t")
         analysis_file, run_accession, sample_accession, platform_name = data[1:]
+
         if platform_name == 'ILLUMINA':
             pipeline_name = 'COVID-19 Sequence Analysis Workflow'
         else:
             pipeline_name = 'Nanopore Analysis Workflow'
-        alias = f"covid_sequence_analysis_workflow_{run_accession}_{analysis_date}"
-        analysis_title = f"VEO SARS-CoV-2 systematically called variant data " \
+        alias = f"covid_consensus_sequence_{run_accession}_{analysis_date}"
+        analysis_title = f"SARS-CoV-2 consensus sequence data produce by the VEO taskforce from public INSDC data " \
                          f"of public run {run_accession} and sample " \
                          f"{sample_accession}, part of the snapshot " \
                          f"generated on 23/08/2021."
@@ -38,7 +40,7 @@ with open(to_be_submitted, 'r') as f:
             'PIPELINE_VERSION': 'v1',
             'SUBMISSION_TOOL': 'ENA_Analysis_Submitter',
             'SUBMISSION_TOOL_VERSION': '1.0.0',
-            'SNAPSHOT_DATE': '29/11/2021'}
+            'SNAPSHOT_DATE': snapshot_date}
 
         analysis_xml_obj = AnalysisXML(
             alias=alias, run_accession=run_accession,
@@ -76,6 +78,7 @@ with open(to_be_submitted, 'r') as f:
                 root = etree.fromstring(submit_process.stdout)
                 if root.get('success') == 'true':
                     print(f"Successfully submitted: {run_accession}")
+                    okays.write(f"{run_accession}\n")
                 else:
                     print(submit_process.stdout)
                     print(f"submission error: {run_accession}")
@@ -87,3 +90,4 @@ with open(to_be_submitted, 'r') as f:
             print(f"md5 error: {run_accession}")
             errors.write(f"{run_accession}\n")
 errors.close()
+okays.close()

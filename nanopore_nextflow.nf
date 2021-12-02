@@ -85,6 +85,8 @@ process map_to_reference {
 //    file("${sampleId}_consensus.fasta.gz")
 //    file("${sampleId}.annot.vcf.gz")
     file("${sampleId}_output.tar.gz")
+    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
+    file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
 
     script:
     """
