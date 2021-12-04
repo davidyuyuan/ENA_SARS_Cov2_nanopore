@@ -8,8 +8,8 @@ date_submitted=${2:-'2021-11-29'}
 # DIR where the current script resides
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-index_tsv="${DIR}/${date_submitted}/nanopore.index.tsv"
-to_be_submitted="${DIR}/${date_submitted}/output/to_be_submitted.tsv"
+index_tsv="${DIR}/../${date_submitted}/nanopore.index.tsv"
+to_be_submitted="${DIR}/../${date_submitted}/output/to_be_submitted.tsv"
 
 true > "${to_be_submitted}" || touch "${to_be_submitted}"
 for f in "${staging_dir}"/*
