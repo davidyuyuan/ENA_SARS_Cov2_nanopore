@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 from AnalysisXML import AnalysisXML
 from SubmissionXML import SubmissionXML
