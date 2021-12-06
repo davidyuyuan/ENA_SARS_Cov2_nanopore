@@ -2,7 +2,7 @@
 
 params.SARS2_FA = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa"
 params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
-//params.INDEX = "gs://prj-int-dev-covid19-nf-gls/data/nanopore.index.tsv"
+//params.INDEX = "gs://prj-int-dev-covid19-nf-gls/data/nanopore_index.tsv"
 //params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/noncovid/storeDir"
 //params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/noncovid/results"
 
