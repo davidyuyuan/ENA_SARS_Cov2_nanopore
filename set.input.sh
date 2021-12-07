@@ -29,8 +29,3 @@ bq --project_id="${project_id}" load --source_format=CSV --replace=true --skip_l
 
 bq --project_id="${project_id}" load --source_format=CSV --replace=true --skip_leading_rows=1 --field_delimiter=tab \
   --autodetect "${dataset_name}.illumina_index" "gs://${dataset_name}/illumina_index.tsv"
-
-
-#nohup ~/gcp-nf/gls/nextflow -C ~/gcp-nf/gls/nextflow.config run ~/ENA_SARS_Cov2_nanopore/nanopore_nextflow.nf \
-#  -w gs://prj-int-dev-covid19-nf-gls/nanopore --INDEX ~/ENA_SARS_Cov2_nanopore/nanopore_index.tsv \
-#  -profile gls --resume -with-tower
