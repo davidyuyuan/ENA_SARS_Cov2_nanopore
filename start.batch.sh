@@ -7,9 +7,6 @@ table_name=${4:-'nanopore_to_be_processed'}
 dataset_name=${5:-'datahub_metadata'}
 project_id=${6:-'prj-int-dev-covid19-nf-gls'}
 
-usage="Usage: $0 <snapshot_date> <batches> <batch_size> <table_name> <dataset_name> <project_id>"
-[ $# -lt 6 ] && { echo $usage; exit 1; }
-
 ## DIR where the current script resides
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
