@@ -16,14 +16,12 @@ cd "${output_dir}" || exit
 gsutil -m cp "${output_dir}/new_nanopore_metadata.tsv" "gs://${dataset_name}/nanopore_metadata.tsv"
 gsutil -m cp "${output_dir}/all_illumina_metadata.tsv" "gs://${dataset_name}/illumina_metadata.tsv"
 
-bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=1 --field_delimiter=tab \
-  "${dataset_name}.nanopore_metadata" "gs://${dataset_name}/nanopore_metadata.tsv" \
-  run_id:STRING,platform:STRING,model:STRING,first_public:DATE,first_created:DATE,country:STRING,collection_date:DATE,snapshot_date:DATE,pipeline_version:STRING
+bq --project_id="${project_id}" load --source_format=CSV --replace=true --skip_leading_rows=1 --field_delimiter=tab \
+  --autodetect "${dataset_name}.nanopore_metadata" "gs://${dataset_name}/nanopore_metadata.tsv"
 
 # There are bad collcetioon_date values. Use STRING instead of DATE.
-bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=1 --field_delimiter=tab \
-  "${dataset_name}.illumina_metadata" "gs://${dataset_name}/illumina_metadata.tsv" \
-  run_id:STRING,platform:STRING,model:STRING,first_public:DATE,first_created:DATE,country:STRING,collection_date:STRING,snapshot_date:DATE,pipeline_version:STRING
+bq --project_id="${project_id}" load --source_format=CSV --replace=true --skip_leading_rows=1 --field_delimiter=tab \
+  --autodetect "${dataset_name}.illumina_metadata" "gs://${dataset_name}/illumina_metadata.tsv"
 
 #awk 'BEGIN{ FS=OFS="\t" }{print $0, "2021-11-29"}' /Users/davidyuan/IdeaProjects/davidyuyuan/ENA_SARS_Cov2_nanopore/results/2021-11-29/output/new_nanopore_metadata.tsv > /Users/davidyuan/IdeaProjects/davidyuyuan/ENA_SARS_Cov2_nanopore/results/2021-11-29/output/new_nanopore_metadata.1.tsv
 #awk 'BEGIN{ FS=OFS="\t" }{print $0, "2021-11-29"}' /Users/davidyuan/IdeaProjects/davidyuyuan/ENA_SARS_Cov2_nanopore/results/2021-11-29/output/all_illumina_metadata.tsv > /Users/davidyuan/IdeaProjects/davidyuyuan/ENA_SARS_Cov2_nanopore/results/2021-11-29/output/all_illumina_metadata.1.tsv
