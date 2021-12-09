@@ -122,7 +122,7 @@ workflow {
 //    data.view()
     data = Channel
             .fromPath(params.INDEX)
-            .splitCsv(header:true)
+            .splitCsv(header:true, sep:'\t')
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     download_fastq(data)
