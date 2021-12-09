@@ -7,7 +7,7 @@ snapshot_date=${1:-'2021-12-13'}
 pipeline=${2:-'nanopore'}
 nextflow_script=${3:-"${HOME}/ENA_SARS_Cov2_nanopore/nanopore_nextflow.nf"}
 concurrent_runs=${4:-'2'}
-batch_size=${5:-'100000'}
+batch_size=${5:-'10000'}
 dataset_name=${6:-'datahub_metadata'}
 project_id=${7:-'prj-int-dev-covid19-nf-gls'}
 
