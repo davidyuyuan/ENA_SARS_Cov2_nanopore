@@ -53,7 +53,7 @@ for ((i=0; i<batches; i+=concurrent_runs)); do
 
     sql="SELECT * FROM ${project_id}.${dataset_name}.${table_name} ORDER BY run_accession DESC LIMIT ${batch_size} OFFSET ${offset}"
     bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false --max_rows="${batch_size}" "${sql}" \
-      | awk 'BEGIN{ FS=","; OFS="\t" }{$1=$1; print $0 }' | grep '_1.fastq.gz;' > "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv"
+      | awk 'BEGIN{ FS=","; OFS="\t" }{$1=$1; print $0 }' > "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv"
 
     echo "${HOME}/gcp-nf/gls/nextflow -C ${HOME}/gcp-nf/gls/nextflow.config run ${nextflow_script} -w gs://${project_id}/${snapshot_date}/${pipeline}_${j}/workDir --INDEX ${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv --OUTDIR gs://${project_id}/${snapshot_date}/${pipeline}_${j}/results --STOREDIR gs://${project_id}/${snapshot_date}/${pipeline}_${j}/storeDir -profile gls --resume -with-tower &"
     "${HOME}/gcp-nf/gls/nextflow" -C "${HOME}/gcp-nf/gls/nextflow.config" run "${nextflow_script}" \
