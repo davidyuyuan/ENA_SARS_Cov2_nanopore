@@ -2,65 +2,66 @@
 
 params.SARS2_FA = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa"
 params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
-//params.INDEX = "gs://prj-int-dev-covid19-nf-gls/data/nanopore_index.tsv"
-//params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/noncovid/storeDir"
-//params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/noncovid/results"
 
-import nextflow.splitter.CsvSplitter
+params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
+params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
+params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
+
+//import nextflow.splitter.CsvSplitter
 nextflow.enable.dsl=2
 
 
-def fetchRunAccessions(String tsv ) {
-    CsvSplitter splitter = new CsvSplitter().options( header:true, sep:'\t' )
-    BufferedReader reader = new BufferedReader( new FileReader( tsv ) )
-    splitter.parseHeader( reader )
+//def fetchRunAccessions(String tsv ) {
+//    CsvSplitter splitter = new CsvSplitter().options( header:true, sep:'\t' )
+//    BufferedReader reader = new BufferedReader( new FileReader( tsv ) )
+//    splitter.parseHeader( reader )
+//
+//    List<String> run_accessions = [] as List<String>
+//    Map<String,String> row
+//    while( row = splitter.fetchRecord( reader ) ) {
+//        run_accessions.add( row['run_accession'] )
+//    }
+//    return run_accessions
+//}
 
-    List<String> run_accessions = [] as List<String>
-    Map<String,String> row
-    while( row = splitter.fetchRecord( reader ) ) {
-        run_accessions.add( row['run_accession'] )
-    }
-    return run_accessions
-}
+// process download_fastq {
+//     storeDir params.STOREDIR
 
-process download_fastq {
-    storeDir params.STOREDIR
+//     // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
+//     // cpus 2
+//     // memory '1 GB'
 
-    // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
-    // cpus 2
-    // memory '1 GB'
+//     input:
+//     tuple val(sampleId), file(input_file)
+//     output:
+//     tuple val(sampleId), file("${sampleId}_1.fastq.gz")
 
-    input:
-    tuple val(sampleId), file(input_file)
-    output:
-    tuple val(sampleId), file("${sampleId}_1.fastq.gz")
+//     script:
+//     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
+//     """
+//     wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+//     """
+// }
 
-    script:
-    // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
-    """
-    wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
-    """
-}
+// process cut_adapters {
+//     storeDir params.STOREDIR
 
-process cut_adapters {
-    storeDir params.STOREDIR
+//     // Use GLS default 1 CPU 1 GB
+//     // cpus 2
+//     // memory '1 GB'
+//     container 'kfdrc/cutadapt'
 
-    // Use GLS default 1 CPU 1 GB
-    // cpus 2
-    // memory '1 GB'
-    container 'kfdrc/cutadapt'
+//     input:
+//     tuple val(sampleId), file(input_file)
 
-    input:
-    tuple val(sampleId), file(input_file)
+//     output:
+//     tuple val(sampleId), file("${sampleId}.trimmed.fastq")
 
-    output:
-    tuple val(sampleId), file("${sampleId}.trimmed.fastq")
-
-    script:
-    """
-    cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
-    """
-}
+//     script:
+//     """
+//     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
+//     """
+// }
 
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
@@ -68,13 +69,14 @@ process map_to_reference {
 
     cpus 8 /* more is better, parallelizes very well*/
     memory '8 GB'       //{ 8.GB * task.attempt }
-    container 'davidyuyuan/ena-sars-cov2-nanopore'
+    container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
 //    errorStrategy = 'retry'
 //    maxRetries 3
 
     input:
-    tuple val(sampleId), file(trimmed)
+    // tuple val(sampleId), file(trimmed)
+    tuple val(sampleId), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
 
@@ -89,8 +91,12 @@ process map_to_reference {
     file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
 
     script:
+    // vcf2consensus.py -v ${sampleId}.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
     """
-    minimap2 -Y -t ${task.cpus} -x map-ont -a ${sars2_fasta} ${trimmed} | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
+    wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+    cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${sampleId}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
+
+    minimap2 -Y -t ${task.cpus} -x map-ont -a ${sars2_fasta} ${sampleId}.trimmed.fastq | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
     samtools index -@ ${task.cpus} ${sampleId}.bam
 
     bam_to_vcf.py -b ${sampleId}.bam -r ${sars2_fasta} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
@@ -101,12 +107,12 @@ process map_to_reference {
     samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${sampleId}.bam > ${sampleId}.pileup
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
     tabix ${sampleId}.vcf.gz
-    vcf2consensus.py -v ${sampleId}.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
+    vcf2consensus.py -v ${sampleId}_filtered.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
     bgzip ${sampleId}.coverage
     bgzip ${sampleId}_consensus.fasta
 
     zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-    java -Xmx4g -jar /data/tools/snpEff/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
+    java -Xmx4g -jar /opt/conda/share/snpeff-4.3.1t-0/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     bgzip ${sampleId}.annot.vcf
 
     mkdir -p ${sampleId}_output
@@ -125,7 +131,7 @@ workflow {
             .splitCsv(header:true, sep:'\t')
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
-    download_fastq(data)
-    cut_adapters(download_fastq.out)
-    map_to_reference(cut_adapters.out, params.SARS2_FA, params.SARS2_FA_FAI)
+    // download_fastq(data)
+    // cut_adapters(download_fastq.out)
+    map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
 }
