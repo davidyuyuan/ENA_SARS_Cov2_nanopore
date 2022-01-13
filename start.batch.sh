@@ -57,11 +57,12 @@ for ((i=0; i<batches; i+=concurrent_runs)); do
 
     echo "${HOME}/gcp-nf/gls/nextflow -C ${HOME}/gcp-nf/gls/nextflow.config run ${nextflow_script} -w gs://${project_id}/${snapshot_date}/${pipeline}_${j}/workDir --INDEX ${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv --OUTDIR gs://${project_id}/${snapshot_date}/${pipeline}_${j}/results --STOREDIR gs://${project_id}/${snapshot_date}/${pipeline}_${j}/storeDir -profile gls --resume -with-tower &"
     "${HOME}/gcp-nf/gls/nextflow" -C "${HOME}/gcp-nf/gls/nextflow.config" run "${nextflow_script}" \
+      -profile gls --resume -with-tower \
       -w "gs://${project_id}/${snapshot_date}/${pipeline}_${j}/workDir" \
       --INDEX "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" \
       --OUTDIR "gs://${project_id}/${snapshot_date}/${pipeline}_${j}/results" \
       --STOREDIR "gs://${project_id}/${snapshot_date}/${pipeline}_${j}/storeDir" \
-      -profile gls --resume -with-tower &
+      &
   done
   wait
 
