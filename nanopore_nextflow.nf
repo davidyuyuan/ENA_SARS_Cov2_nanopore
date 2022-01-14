@@ -27,7 +27,7 @@ process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
 
-    cpus 8 /* more is better, parallelizes very well*/
+    cpus 4 /* more is better, parallelizes very well*/
     memory '8 GB'
     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
