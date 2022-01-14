@@ -81,18 +81,15 @@ process map_to_reference {
     path(sars2_fasta_fai)
 
     output:
-    file("${sampleId}.bam")
-    file("${sampleId}_filtered.vcf.gz")
-    file("${sampleId}.coverage.gz")
-    file("${sampleId}_consensus.fasta.gz")
-    file("${sampleId}.annot.vcf.gz")
-    file("${sampleId}.annot.vcf")
+//    file("${sampleId}_output/${sampleId}.bam")
+//    file("${sampleId}_output/${sampleId}.coverage.gz")
+//    file("${sampleId}_output/${sampleId}.annot.vcf.gz")
     file("${sampleId}_output.tar.gz")
-    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
     file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
+    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
 
     script:
-    // vcf2consensus.py -v ${sampleId}.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
+    // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
     """
     wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${sampleId}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
