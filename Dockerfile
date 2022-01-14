@@ -8,3 +8,4 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 # COPY --chown=micromamba:micromamba bin/ .
 # ADD bin/* /usr/local/bin/
 USER root
+RUN java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar download NC_045512.2

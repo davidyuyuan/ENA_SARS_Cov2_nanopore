@@ -86,6 +86,7 @@ process map_to_reference {
     file("${sampleId}.coverage.gz")
     file("${sampleId}_consensus.fasta.gz")
     file("${sampleId}.annot.vcf.gz")
+    file("${sampleId}.annot.vcf")
     file("${sampleId}_output.tar.gz")
     file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
     file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
@@ -112,7 +113,7 @@ process map_to_reference {
     bgzip ${sampleId}_consensus.fasta
 
     zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-    java -Xmx4g -jar /opt/conda/share/snpeff-4.3.1t-0/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
+    java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar -q -no-downstream -no-upstream -noStats NC_045512.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     bgzip ${sampleId}.annot.vcf
 
     mkdir -p ${sampleId}_output
