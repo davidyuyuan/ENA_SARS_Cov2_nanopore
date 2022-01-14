@@ -5,4 +5,6 @@ RUN micromamba install -y -n base -f /tmp/env.yaml && \
     micromamba clean --all --yes
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
-COPY --chown=micromamba:micromamba bin/ .
+# COPY --chown=micromamba:micromamba bin/ .
+# ADD bin/* /usr/local/bin/
+USER root

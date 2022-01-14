@@ -111,7 +111,7 @@ process map_to_reference {
     bgzip ${sampleId}.coverage
     bgzip ${sampleId}_consensus.fasta
 
-    zcat ${sampleId}_filtered.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
+    zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
     java -Xmx4g -jar /opt/conda/share/snpeff-4.3.1t-0/snpEff.jar -q -no-downstream -no-upstream -noStats sars.cov.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     bgzip ${sampleId}.annot.vcf
 
