@@ -24,46 +24,44 @@ nextflow.enable.dsl=2
 //    return run_accessions
 //}
 
- process download_fastq {
-     storeDir params.STOREDIR
+// process download_fastq {
+//     storeDir params.STOREDIR
 
-     // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
-     // cpus 2
-     // memory '1 GB'
-     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
+//     // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
+//     // cpus 2
+//     // memory '1 GB'
 
-     input:
-     tuple val(sampleId), file(input_file)
-     output:
-     tuple val(sampleId), file("${sampleId}_1.fastq.gz")
+//     input:
+//     tuple val(sampleId), file(input_file)
+//     output:
+//     tuple val(sampleId), file("${sampleId}_1.fastq.gz")
 
-     script:
-     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
-     """
-     wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
-     """
- }
+//     script:
+//     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
+//     """
+//     wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+//     """
+// }
 
- process cut_adapters {
-     storeDir params.STOREDIR
+// process cut_adapters {
+//     storeDir params.STOREDIR
 
-     // Use GLS default 1 CPU 1 GB
-     // cpus 2
-     // memory '1 GB'
+//     // Use GLS default 1 CPU 1 GB
+//     // cpus 2
+//     // memory '1 GB'
 //     container 'kfdrc/cutadapt'
-     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
-     input:
-     tuple val(sampleId), file(input_file)
+//     input:
+//     tuple val(sampleId), file(input_file)
 
-     output:
-     tuple val(sampleId), file("${sampleId}.trimmed.fastq")
+//     output:
+//     tuple val(sampleId), file("${sampleId}.trimmed.fastq")
 
-     script:
-     """
-     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
-     """
- }
+//     script:
+//     """
+//     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
+//     """
+// }
 
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
@@ -77,8 +75,8 @@ process map_to_reference {
 //    maxRetries 3
 
     input:
-    tuple val(sampleId), file(trimmed)
-//    tuple val(sampleId), file(input_file)
+    // tuple val(sampleId), file(trimmed)
+    tuple val(sampleId), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
 
@@ -93,10 +91,10 @@ process map_to_reference {
     file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
 
     script:
-//    wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
-//    cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${sampleId}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
     // vcf2consensus.py -v ${sampleId}.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
     """
+    wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
+    cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${sampleId}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
 
     minimap2 -Y -t ${task.cpus} -x map-ont -a ${sars2_fasta} ${sampleId}.trimmed.fastq | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${sampleId}.bam
     samtools index -@ ${task.cpus} ${sampleId}.bam
@@ -133,8 +131,7 @@ workflow {
             .splitCsv(header:true, sep:'\t')
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
-    download_fastq(data)
-    cut_adapters(download_fastq.out)
-
+    // download_fastq(data)
+    // cut_adapters(download_fastq.out)
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
 }
