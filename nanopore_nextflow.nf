@@ -106,7 +106,7 @@ process map_to_reference {
 
     samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${sampleId}.bam > ${sampleId}.pileup
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
-    tabix ${sampleId}.vcf.gz
+    tabix ${sampleId}_filtered.vcf.gz
     vcf2consensus.py -v ${sampleId}_filtered.vcf.gz -d ${sampleId}.coverage -r ${sars2_fasta} -o ${sampleId}_consensus.fasta -dp 30 -n ${sampleId}
     bgzip ${sampleId}.coverage
     bgzip ${sampleId}_consensus.fasta
