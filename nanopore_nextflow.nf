@@ -10,7 +10,6 @@ params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
 //import nextflow.splitter.CsvSplitter
 nextflow.enable.dsl=2
 
-
 //def fetchRunAccessions(String tsv ) {
 //    CsvSplitter splitter = new CsvSplitter().options( header:true, sep:'\t' )
 //    BufferedReader reader = new BufferedReader( new FileReader( tsv ) )
@@ -24,58 +23,15 @@ nextflow.enable.dsl=2
 //    return run_accessions
 //}
 
-// process download_fastq {
-//     storeDir params.STOREDIR
-
-//     // Use GLS default 1 CPU 1 GB and default quay.io/nextflow/bash
-//     // cpus 2
-//     // memory '1 GB'
-
-//     input:
-//     tuple val(sampleId), file(input_file)
-//     output:
-//     tuple val(sampleId), file("${sampleId}_1.fastq.gz")
-
-//     script:
-//     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
-//     """
-//     wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
-//     """
-// }
-
-// process cut_adapters {
-//     storeDir params.STOREDIR
-
-//     // Use GLS default 1 CPU 1 GB
-//     // cpus 2
-//     // memory '1 GB'
-//     container 'kfdrc/cutadapt'
-
-//     input:
-//     tuple val(sampleId), file(input_file)
-
-//     output:
-//     tuple val(sampleId), file("${sampleId}.trimmed.fastq")
-
-//     script:
-//     """
-//     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${input_file} -m 75 -j ${task.cpus} --quiet
-//     """
-// }
-
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
 
     cpus 8 /* more is better, parallelizes very well*/
-    memory '8 GB'       //{ 8.GB * task.attempt }
+    memory '8 GB'
     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
-//    errorStrategy = 'retry'
-//    maxRetries 3
-
     input:
-    // tuple val(sampleId), file(trimmed)
     tuple val(sampleId), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
@@ -129,7 +85,5 @@ workflow {
             .splitCsv(header:true, sep:'\t')
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
-    // download_fastq(data)
-    // cut_adapters(download_fastq.out)
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
 }
