@@ -81,11 +81,11 @@ process map_to_reference {
     path(sars2_fasta_fai)
 
     output:
-//    file("${sampleId}.bam")
-//    file("${sampleId}_filtered.vcf.gz")
-//    file("${sampleId}.coverage.gz")
-//    file("${sampleId}_consensus.fasta.gz")
-//    file("${sampleId}.annot.vcf.gz")
+    file("${sampleId}.bam")
+    file("${sampleId}_filtered.vcf.gz")
+    file("${sampleId}.coverage.gz")
+    file("${sampleId}_consensus.fasta.gz")
+    file("${sampleId}.annot.vcf.gz")
     file("${sampleId}_output.tar.gz")
     file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
     file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
