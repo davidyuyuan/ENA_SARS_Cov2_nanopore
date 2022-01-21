@@ -70,8 +70,9 @@ process map_to_reference {
     bgzip ${sampleId}.annot.vcf
 
     mkdir -p ${sampleId}_output
-    mv ${sampleId}.bam ${sampleId}_filtered.vcf.gz ${sampleId}.coverage.gz ${sampleId}_consensus.fasta.gz ${sampleId}.annot.vcf.gz ${sampleId}_output
-    tar -zcvf ${sampleId}_output.tar.gz ${sampleId}_output 
+    mv ${sampleId}.bam ${sampleId}.coverage.gz ${sampleId}.annot.vcf.gz ${sampleId}_output
+    tar -zcvf ${sampleId}_output.tar.gz ${sampleId}_output
+    mv ${sampleId}_filtered.vcf.gz ${sampleId}_consensus.fasta.gz ${sampleId}_output
     """
 }
 
