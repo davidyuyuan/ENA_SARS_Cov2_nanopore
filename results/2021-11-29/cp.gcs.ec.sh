@@ -34,24 +34,3 @@ sudo vi /etc/fstab
 # Pull new results and duplicated results separately
 nohhup gsutil -m cp -n -I /mnt/result/from_gcs/nanopore/new < /mnt/result/from_gcs/nanopore/new_results.txt
 nohhup gsutil -m cp -n -I /mnt/result/from_gcs/nanopore/duplicated < /mnt/result/from_gcs/nanopore/duplicated_results.txt
-
-
-##!/usr/bin/env bash
-#
-#export AWS_ACCESS_KEY_ID=D0FVX5OMT6UWFNN5DVFA
-#export AWS_SECRET_ACCESS_KEY=GwIROUcKvad2bjhuEbVu6TNQr7kPToeisrPABk3Z
-#export AWS_DEFAULT_REGION=us-east-1
-#
-## DIR where the current script resides
-#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-#
-#while IFS="" read -r p || [ -n "$p" ]
-#do
-##   printf '%s\n' "$p"
-##   printf '%s\n' $(basename "$p")
-#    gsutil -m cp "$p" "${DIR}"
-#    aws s3 --endpoint-url https://uk1s3.embassy.ebi.ac.uk cp $(basename "$p") s3://results_from_gcs
-#    rm $(basename "$p")
-#    # ls -ltr
-#    # aws s3 --endpoint-url https://uk1s3.embassy.ebi.ac.uk ls s3://results_from_gcs
-#done < "${DIR}/short_results.txt"

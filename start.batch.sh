@@ -8,8 +8,9 @@ pipeline=${2:-'nanopore'}
 nextflow_script=${3:-"${HOME}/ENA_SARS_Cov2_nanopore/nanopore_nextflow.nf"}
 concurrent_runs=${4:-'2'}
 batch_size=${5:-'10000'}
-dataset_name=${6:-'datahub_metadata'}
-project_id=${7:-'prj-int-dev-covid19-nf-gls'}
+starting_batch=${6:-'0'}
+dataset_name=${7:-'datahub_metadata'}
+project_id=${8:-'prj-int-dev-covid19-nf-gls'}
 
 # Result directories
 output_dir="${DIR}/results/${snapshot_date}/output"
@@ -46,7 +47,7 @@ function gen_metadata {
   done < "${input_file}"
 }
 
-for ((i=0; i<batches; i+=concurrent_runs)); do
+for ((i=starting_batch; i<batches; i+=concurrent_runs)); do
   for ((j=i; j<i+concurrent_runs&&j<batches; j++)); do
     offset=$((j * batch_size))
     echo "Processing from offset ${offset}..."
