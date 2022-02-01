@@ -57,6 +57,7 @@ process map_to_reference {
 
     bam_to_vcf.py -b ${sampleId}.bam -r ${sars2_fasta} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
     filtervcf.py -i ${sampleId}.vcf -o ${sampleId}_filtered.vcf
+    bgzip ${sampleId}_filtered.vcf
 
     samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${sampleId}.bam > ${sampleId}.pileup
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
@@ -67,7 +68,7 @@ process map_to_reference {
 
     java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar -q -no-downstream -no-upstream -noStats NC_045512.2 ${sampleId}.vcf > ${sampleId}.annot.vcf
     bgzip ${sampleId}.vcf
-    bgzip ${sampleId}_filtered.vcf
+    
     bgzip ${sampleId}.annot.vcf
 
     mkdir -p ${sampleId}_output
