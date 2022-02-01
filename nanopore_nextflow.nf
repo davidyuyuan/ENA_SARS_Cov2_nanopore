@@ -46,6 +46,8 @@ process map_to_reference {
 
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
+//    zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
+//    java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar -q -no-downstream -no-upstream -noStats NC_045512.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
     wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${sampleId}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
@@ -55,8 +57,6 @@ process map_to_reference {
 
     bam_to_vcf.py -b ${sampleId}.bam -r ${sars2_fasta} --mindepth 30 --minAF 0.1 -c ${task.cpus} -o ${sampleId}.vcf
     filtervcf.py -i ${sampleId}.vcf -o ${sampleId}_filtered.vcf
-    bgzip ${sampleId}.vcf
-    bgzip ${sampleId}_filtered.vcf
 
     samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${sampleId}.bam > ${sampleId}.pileup
     cat ${sampleId}.pileup | awk '{print \$2,","\$3,","\$4}' > ${sampleId}.coverage
@@ -65,8 +65,9 @@ process map_to_reference {
     bgzip ${sampleId}.coverage
     bgzip ${sampleId}_consensus.fasta
 
-    zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-    java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar -q -no-downstream -no-upstream -noStats NC_045512.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
+    java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar -q -no-downstream -no-upstream -noStats NC_045512.2 ${sampleId}.vcf > ${sampleId}.annot.vcf
+    bgzip ${sampleId}.vcf
+    bgzip ${sampleId}_filtered.vcf
     bgzip ${sampleId}.annot.vcf
 
     mkdir -p ${sampleId}_output
