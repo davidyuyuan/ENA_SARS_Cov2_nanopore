@@ -46,8 +46,6 @@ process map_to_reference {
 
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
-//    zcat ${sampleId}.vcf.gz | sed "s/^NC_045512.2/NC_045512/" > ${sampleId}.newchr.vcf
-//    java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar -q -no-downstream -no-upstream -noStats NC_045512.2 ${sampleId}.newchr.vcf > ${sampleId}.annot.vcf
     """
     wget -t 0 -O ${sampleId}_1.fastq.gz \$(cat ${input_file})
     cutadapt -u 30 -u -30 -o ${sampleId}.trimmed.fastq ${sampleId}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
@@ -68,7 +66,6 @@ process map_to_reference {
 
     java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar -q -no-downstream -no-upstream -noStats NC_045512.2 ${sampleId}.vcf > ${sampleId}.annot.vcf
     bgzip ${sampleId}.vcf
-    
     bgzip ${sampleId}.annot.vcf
 
     mkdir -p ${sampleId}_output
