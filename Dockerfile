@@ -6,7 +6,7 @@ RUN micromamba install -y -n base -f /tmp/env.yaml && \
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 # For debugging without Nextflow
-COPY --chown=micromamba:micromamba bin/ .
+COPY bin/* /usr/local/bin/
 
 USER root
 RUN java -Xmx4g -jar /opt/conda/share/snpeff-5.0-1/snpEff.jar download NC_045512.2
