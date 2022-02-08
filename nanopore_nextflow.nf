@@ -34,7 +34,7 @@ process map_to_reference {
     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
     input:
-    tuple(val(sampleId), file(input_file))
+    tuple val(sampleId), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
 
@@ -45,7 +45,6 @@ process map_to_reference {
 //    file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
 //    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
     //    , emit: sample_id//    , emit: output_tgz//    , emit: filtered_vcf_gz//    , emit: consensus_fasta_gz
-
     val(sampleId)
     file("${sampleId}_output.tar.gz")
     file("${sampleId}_filtered.vcf.gz")
