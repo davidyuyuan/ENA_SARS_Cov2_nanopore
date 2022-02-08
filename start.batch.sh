@@ -6,11 +6,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 snapshot_date=${1:-'2021-12-13'}
 pipeline=${2:-'nanopore'}
 nextflow_script=${3:-"${HOME}/ENA_SARS_Cov2_nanopore/nanopore_nextflow.nf"}
-concurrent_runs=${4:-'2'}
-batch_size=${5:-'10000'}
-starting_batch=${6:-'0'}
-dataset_name=${7:-'datahub_metadata'}
-project_id=${8:-'prj-int-dev-covid19-nf-gls'}
+projects_accounts_csv=${4:-"${HOME}/projects_accounts.csv"}
+concurrent_runs=${5:-'2'}
+batch_size=${6:-'10000'}
+starting_batch=${7:-'0'}
+dataset_name=${8:-'datahub_metadata'}
+project_id=${9:-'prj-int-dev-covid19-nf-gls'}
 
 # Result directories
 output_dir="${DIR}/results/${snapshot_date}/output"
@@ -56,13 +57,13 @@ for ((i=starting_batch; i<batches; i+=concurrent_runs)); do
     bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false --max_rows="${batch_size}" "${sql}" \
       | awk 'BEGIN{ FS=","; OFS="\t" }{$1=$1; print $0 }' > "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv"
 
-    echo "${HOME}/gcp-nf/gls/nextflow -C ${HOME}/gcp-nf/gls/nextflow.config run ${nextflow_script} -w gs://${project_id}/${snapshot_date}/${pipeline}_${j}/workDir --INDEX ${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv --OUTDIR gs://${project_id}/${snapshot_date}/${pipeline}_${j}/results --STOREDIR gs://${project_id}/${snapshot_date}/${pipeline}_${j}/storeDir -profile gls --resume -with-tower &"
     "${HOME}/gcp-nf/gls/nextflow" -C "${HOME}/gcp-nf/gls/nextflow.config" run "${nextflow_script}" \
       -profile gls --resume -with-tower \
       -w "gs://${project_id}/${snapshot_date}/${pipeline}_${j}/workDir" \
       --INDEX "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" \
       --OUTDIR "gs://${project_id}/${snapshot_date}/${pipeline}_${j}/results" \
       --STOREDIR "gs://${project_id}/${snapshot_date}/${pipeline}_${j}/storeDir" \
+      --SECRETS "${projects_accounts_csv}" \
       &
   done
   wait

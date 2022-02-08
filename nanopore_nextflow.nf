@@ -44,10 +44,10 @@ process map_to_reference {
 //    file("${sampleId}_output/${sampleId}.annot.vcf.gz")
 //    file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
 //    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
-    val(sampleId, emit: sample_id)
-    file("${sampleId}_output.tar.gz", emit: output_tgz)
-    file("${sampleId}_filtered.vcf.gz", emit: filtered_vcf_gz)
-    file("${sampleId}_consensus.fasta.gz", emit: consensus_fasta_gz)
+    val(sampleId), emit: sample_id
+    file("${sampleId}_output.tar.gz"), emit: output_tgz
+    file("${sampleId}_filtered.vcf.gz"), emit: filtered_vcf_gz
+    file("${sampleId}_consensus.fasta.gz"), emit: consensus_fasta_gz
 
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
