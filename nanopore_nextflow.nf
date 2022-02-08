@@ -80,7 +80,7 @@ process map_to_reference {
     """
 }
 
-process ena-analysis-submit {
+process ena_analysis_submit {
     publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
     secret 'webin_password'
