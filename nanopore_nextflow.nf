@@ -44,10 +44,14 @@ process map_to_reference {
 //    file("${sampleId}_output/${sampleId}.annot.vcf.gz")
 //    file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
 //    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
-    val(sampleId), emit: sample_id
-    file("${sampleId}_output.tar.gz"), emit: output_tgz
-    file("${sampleId}_filtered.vcf.gz"), emit: filtered_vcf_gz
-    file("${sampleId}_consensus.fasta.gz"), emit: consensus_fasta_gz
+    val(sampleId)
+//    , emit: sample_id
+    file("${sampleId}_output.tar.gz")
+//    , emit: output_tgz
+    file("${sampleId}_filtered.vcf.gz")
+//    , emit: filtered_vcf_gz
+    file("${sampleId}_consensus.fasta.gz")
+//    , emit: consensus_fasta_gz
 
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
@@ -128,10 +132,5 @@ workflow {
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
-    ena-analysis-submit(
-            map_to_reference.out.sample_id,
-            map_to_reference.out.output_tgz,
-            map_to_reference.out.filtered_vcf_gz,
-            map_to_reference.out.consensus_fasta_gz,
-            params.SECRETS)
+    ena-analysis-submit(map_to_reference.out, params.SECRETS)
 }
