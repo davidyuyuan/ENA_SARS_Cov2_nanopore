@@ -103,6 +103,9 @@ process ena_analysis_submit {
 //    webin_id=\$(echo "${webin_line}" | cut -d ',' -f 4)
 //    webin_password=\$(echo "${webin_line}" | cut -d ',' -f 5)
     """
+    webin_line="\$(grep "PRJEB43947" "${projects_accounts_csv}")"
+    webin_id="\$(echo "${webin_line}" | cut -d ',' -f 4)"
+    webin_password="\$(echo "${webin_line}" | cut -d ',' -f 5)"
     cp -f config.yaml /usr/local/bin/config.yaml
     
     analysis_submission.py -t -p PRJEB43947 -r ${sampleId} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
