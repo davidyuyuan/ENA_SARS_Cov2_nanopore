@@ -5,6 +5,7 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
 params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
+params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.yaml"
 
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
@@ -92,6 +93,7 @@ process ena_analysis_submit {
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
     path(projects_accounts_csv)
+    path(config_yaml)
 
     output:
     file("${sampleId}_output.tar.gz")
@@ -103,10 +105,7 @@ process ena_analysis_submit {
 //    webin_id=\$(echo "${webin_line}" | cut -d ',' -f 4)
 //    webin_password=\$(echo "${webin_line}" | cut -d ',' -f 5)
     """
-    webin_line="\$(grep "PRJEB43947" "${projects_accounts_csv}")"
-    webin_id="\$(echo "${webin_line}" | cut -d ',' -f 4)"
-    webin_password="\$(echo "${webin_line}" | cut -d ',' -f 5)"
-    cp -f config.yaml /usr/local/bin/config.yaml
+    cp -f ${config_yaml} /usr/local/bin/config.yaml
     
     analysis_submission.py -t -p PRJEB43947 -r ${sampleId} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
     analysis_submission.py -t -p PRJEB45554 -r ${sampleId} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
@@ -130,5 +129,5 @@ workflow {
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
-    ena_analysis_submit(map_to_reference.out, params.SECRETS)
+    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.CONFIG)
 }
