@@ -35,7 +35,7 @@ process map_to_reference {
     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
     input:
-    tuple val(run_accession), file(input_file)
+    tuple val(run_accession), val(sample_accession), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
 
@@ -47,6 +47,7 @@ process map_to_reference {
 //    file("${run_accession}_output/${run_accession}_consensus.fasta.gz")
     //    , emit: sample_id//    , emit: output_tgz//    , emit: filtered_vcf_gz//    , emit: consensus_fasta_gz
     val(run_accession)
+    val(sample_accession)
     file("${run_accession}_output.tar.gz")
     file("${run_accession}_filtered.vcf.gz")
     file("${run_accession}_consensus.fasta.gz")
@@ -89,6 +90,7 @@ process ena_analysis_submit {
 
     input:
     val(run_accession)
+    val(sample_accession)
     file(output_tgz)
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
@@ -99,6 +101,7 @@ process ena_analysis_submit {
     file("${run_accession}_output.tar.gz")
     file("${run_accession}_output/${run_accession}_filtered.vcf.gz")
     file("${run_accession}_output/${run_accession}_consensus.fasta.gz")
+    file("successful_submissions.txt")
 
     script:
 //    webin_line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
@@ -106,10 +109,10 @@ process ena_analysis_submit {
 //    webin_password=\$(echo "${webin_line}" | cut -d ',' -f 5)
     """
     cp -f ${config_yaml} /usr/local/bin/config.yaml
-    
-    analysis_submission.py -t -s SAMN23287060 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
-    analysis_submission.py -t -s SAMN23287060 -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
-    analysis_submission.py -t -s SAMN23287060 -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
+    analysis_submission.py -t -s ${sample_accession} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
+    analysis_submission.py -t -s ${sample_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
+    analysis_submission.py -t -s ${sample_accession} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
+    mv /usr/local/bin/successful_submissions.txt successful_submissions.txt
 
     mv ${output_tgz} ${run_accession}_output.tar.gz
     mv ${filtered_vcf_gz} ${run_accession}_filtered.vcf.gz
@@ -126,7 +129,7 @@ workflow {
     data = Channel
             .fromPath(params.INDEX)
             .splitCsv(header:true, sep:'\t')
-            .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
+            .map{ row-> tuple(row.run_accession, row.sample_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.CONFIG)
