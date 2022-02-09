@@ -99,16 +99,15 @@ process ena_analysis_submit {
     file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
 
     script:
+//    webin_line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
+//    webin_id=\$(echo "${webin_line}" | cut -d ',' -f 4)
+//    webin_password=\$(echo "${webin_line}" | cut -d ',' -f 5)
     """
     cp -f config.yaml /usr/local/bin/config.yaml
-
-    webin_line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
-    webin_id=\$(echo "${webin_line}" | cut -d ',' -f 4)
-    webin_password=\$(echo "${webin_line}" | cut -d ',' -f 5)
-
-    analysis_submission.py -p PRJEB43947 -r ${sampleId} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au ${webin_id} -ap ${webin_password} -t
-    analysis_submission.py -p PRJEB45554 -r ${sampleId} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au ${webin_id} -ap ${webin_password} -t
-    analysis_submission.py -p PRJEB45619 -r ${sampleId} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS_VCF -au ${webin_id} -ap ${webin_password} -t
+    
+    analysis_submission.py -t -p PRJEB43947 -r ${sampleId} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
+    analysis_submission.py -t -p PRJEB45554 -r ${sampleId} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
+    analysis_submission.py -t -p PRJEB45619 -r ${sampleId} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5)
 
     mv ${output_tgz} ${sampleId}_output.tar.gz
     mv ${filtered_vcf_gz} ${sampleId}_filtered.vcf.gz
