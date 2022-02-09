@@ -40,9 +40,13 @@ process map_to_reference {
 //    file("${sampleId}_output/${sampleId}.bam")
 //    file("${sampleId}_output/${sampleId}.coverage.gz")
 //    file("${sampleId}_output/${sampleId}.annot.vcf.gz")
+//    file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
+//    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
+    //    , emit: sample_id//    , emit: output_tgz//    , emit: filtered_vcf_gz//    , emit: consensus_fasta_gz
+    val(sampleId)
     file("${sampleId}_output.tar.gz")
-    file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
-    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
+    file("${sampleId}_filtered.vcf.gz")
+    file("${sampleId}_consensus.fasta.gz")
 
     script:
     // curl -o ${sampleId}_1.fastq.gz \$(cat ${input_file})
@@ -75,6 +79,43 @@ process map_to_reference {
     """
 }
 
+process ena_analysis_submit {
+    publishDir params.OUTDIR, mode:'copy'
+    storeDir params.STOREDIR
+    secret 'webin_password'
+
+    container 'davidyuyuan/ena-analysis-submitter:1.0'
+
+    input:
+    val(sampleId)
+    file(output_tgz)
+    file(filtered_vcf_gz)
+    file(consensus_fasta_gz)
+    path(projects_accounts_csv)
+
+    output:
+    file("${sampleId}_output.tar.gz")
+    file("${sampleId}_output/${sampleId}_filtered.vcf.gz")
+    file("${sampleId}_output/${sampleId}_consensus.fasta.gz")
+
+    script:
+    """
+    cp -f config.yaml /usr/local/bin/config.yaml
+
+    line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
+    webin_id=\$(echo "${line}" | cut -d ',' -f 4)
+    webin_password=\$(echo "${line}" | cut -d ',' -f 5)
+
+    analysis_submission.py -p PRJEB43947 -r ${sampleId} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au ${webin_id} -ap ${webin_password} -t
+    analysis_submission.py -p PRJEB45554 -r ${sampleId} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au ${webin_id} -ap ${webin_password} -t
+    analysis_submission.py -p PRJEB45619 -r ${sampleId} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS_VCF -au ${webin_id} -ap ${webin_password} -t
+
+    mv ${output_tgz} ${sampleId}_output.tar.gz
+    mv ${filtered_vcf_gz} ${sampleId}_filtered.vcf.gz
+    mv ${consensus_fasta_gz} ${sampleId}_consensus.fasta.gz
+    """
+}
+
 workflow {
 //    Requires local input.
 //    accessions = fetchRunAccessions(params.INDEX)
@@ -86,4 +127,5 @@ workflow {
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
+//    ena_analysis_submit(map_to_reference.out, params.SECRETS)
 }
