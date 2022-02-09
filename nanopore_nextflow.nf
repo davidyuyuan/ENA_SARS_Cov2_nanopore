@@ -26,7 +26,7 @@ nextflow.enable.dsl=2
 //}
 
 process map_to_reference {
-    publishDir params.OUTDIR, mode:'copy'
+//    publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
 
     cpus 4 /* more is better, parallelizes very well*/
@@ -102,9 +102,9 @@ process ena_analysis_submit {
     """
     cp -f config.yaml /usr/local/bin/config.yaml
 
-    line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
-    webin_id=\$(echo "${line}" | cut -d ',' -f 4)
-    webin_password=\$(echo "${line}" | cut -d ',' -f 5)
+    webin_line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
+    webin_id=\$(echo "${webin_line}" | cut -d ',' -f 4)
+    webin_password=\$(echo "${webin_line}" | cut -d ',' -f 5)
 
     analysis_submission.py -p PRJEB43947 -r ${sampleId} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au ${webin_id} -ap ${webin_password} -t
     analysis_submission.py -p PRJEB45554 -r ${sampleId} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au ${webin_id} -ap ${webin_password} -t
