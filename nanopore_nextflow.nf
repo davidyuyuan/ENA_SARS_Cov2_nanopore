@@ -83,7 +83,6 @@ process map_to_reference {
 process ena_analysis_submit {
     publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
-    secret 'webin_password'
 
     container 'davidyuyuan/ena-analysis-submitter:1.0'
 
