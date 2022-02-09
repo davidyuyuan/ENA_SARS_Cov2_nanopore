@@ -75,7 +75,6 @@ process map_to_reference {
     mkdir -p ${sampleId}_output
     mv ${sampleId}.bam ${sampleId}.coverage.gz ${sampleId}.annot.vcf.gz ${sampleId}_output
     tar -zcvf ${sampleId}_output.tar.gz ${sampleId}_output
-    mv ${sampleId}_filtered.vcf.gz ${sampleId}_consensus.fasta.gz ${sampleId}_output
     """
 }
 
@@ -113,6 +112,7 @@ process ena_analysis_submit {
     mv ${output_tgz} ${sampleId}_output.tar.gz
     mv ${filtered_vcf_gz} ${sampleId}_filtered.vcf.gz
     mv ${consensus_fasta_gz} ${sampleId}_consensus.fasta.gz
+    mv ${sampleId}_filtered.vcf.gz ${sampleId}_consensus.fasta.gz ${sampleId}_output
     """
 }
 
@@ -127,5 +127,5 @@ workflow {
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
-//    ena_analysis_submit(map_to_reference.out, params.SECRETS)
+    ena_analysis_submit(map_to_reference.out, params.SECRETS)
 }
