@@ -98,9 +98,9 @@ process ena_analysis_submit {
     path(config_yaml)
 
     output:
-    file("${run_accession}_output.tar.gz")
-    file("${run_accession}_filtered.vcf.gz")
-    file("${run_accession}_consensus.fasta.gz")
+    file("${sample_accession}_output/${run_accession}_output.tar.gz")
+    file("${sample_accession}_output/${run_accession}_filtered.vcf.gz")
+    file("${sample_accession}_output/${run_accession}_consensus.fasta.gz")
     file("successful_submissions.txt")
 
     script:
