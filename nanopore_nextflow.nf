@@ -112,11 +112,11 @@ process ena_analysis_submit {
 //    analysis_submission.py -t -s ${sample_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5) &
 //    analysis_submission.py -t -s ${sample_accession} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS_VCF -au \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 4) -ap \$(grep "PRJEB43947" "${projects_accounts_csv}" | cut -d ',' -f 5) &
 //    wait && mv /usr/local/bin/successful_submissions.txt successful_submissions.txt
-//    mv ${output_tgz} ${run_accession}_output.tar.gz
-//    mv ${filtered_vcf_gz} ${run_accession}_filtered.vcf.gz
-//    mv ${consensus_fasta_gz} ${run_accession}_consensus.fasta.gz
-//    mv ${run_accession}_filtered.vcf.gz ${run_accession}_consensus.fasta.gz ${run_accession}_output
     """
+    mv ${output_tgz} ${run_accession}_output.tar.gz
+    mv ${filtered_vcf_gz} ${run_accession}_filtered.vcf.gz
+    mv ${consensus_fasta_gz} ${run_accession}_consensus.fasta.gz
+    mv ${run_accession}_output.tar.gz ${run_accession}_filtered.vcf.gz ${run_accession}_consensus.fasta.gz ${sample_accession}_output
     echo "Hello?"
     """
 }
