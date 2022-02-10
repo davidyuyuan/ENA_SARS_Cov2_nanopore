@@ -114,8 +114,8 @@ process ena_analysis_submit {
 //    wait && mv /usr/local/bin/successful_submissions.txt successful_submissions.txt
     """
     cat ${config_yaml} > /usr/local/bin/config.yaml
-    mkdir -p ${sample_accession}_output
-    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${sample_accession}_output
+    mkdir -p ${run_accession}_output
+    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
     """
 }
 
