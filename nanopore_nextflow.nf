@@ -101,7 +101,7 @@ process ena_analysis_submit {
     file("${sample_accession}_output/${run_accession}_output.tar.gz")
     file("${sample_accession}_output/${run_accession}_filtered.vcf.gz")
     file("${sample_accession}_output/${run_accession}_consensus.fasta.gz")
-    file("successful_submissions.txt")
+//    file("successful_submissions.txt")
 
     script:
 //    webin_line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
@@ -115,7 +115,6 @@ process ena_analysis_submit {
     """
     mkdir -p ${run_accession}_output ${sample_accession}_output
     mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${sample_accession}_output
-    echo "Hello?"
     """
 }
 
