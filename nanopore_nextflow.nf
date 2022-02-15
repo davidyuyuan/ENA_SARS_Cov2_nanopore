@@ -116,12 +116,12 @@ process ena_analysis_submit {
     cp -f ${config_yaml} /usr/local/bin/config.yaml
     cat /usr/local/bin/config.yaml
     
-    !{webin_line}=\$(grep "PRJEB43947" "${projects_accounts_csv}")
-    echo ${webin_line}
-    !{webin_id}=\$(echo "${webin_line}" | cut -d ',' -f 4)
-    echo ${webin_id}
-    !{webin_password}=\$(echo "${webin_line}" | cut -d ',' -f 5)
-    echo ${webin_password}
+    webin_line=\$(grep "PRJEB43947" "${projects_accounts_csv}")
+    echo \${webin_line}
+    webin_id=\$(echo "${webin_line}" | cut -d ',' -f 4)
+    echo \${webin_id}
+    webin_password=\$(echo "${webin_line}" | cut -d ',' -f 5)
+    echo \${webin_password}
 
     mkdir -p ${run_accession}_output
     mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
