@@ -5,7 +5,7 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
 params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
-params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.yaml"
+params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.nanopore.yaml"
 
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
