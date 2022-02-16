@@ -116,7 +116,7 @@ process ena_analysis_submit {
 //    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
     """
     echo ${projectDir}
-    ls -l ${NXF_SCRATCH}/
+    ls -l \${NXF_SCRATCH}/
     echo $workDir
     echo \$PATH
 
