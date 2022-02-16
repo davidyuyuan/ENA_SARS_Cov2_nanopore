@@ -116,7 +116,7 @@ process ena_analysis_submit {
 //    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
     """
     echo ${projectDir}
-    ls -l ${launchDir}/bin
+    ls -l ${workDir}/
     echo $workDir
 
     webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
