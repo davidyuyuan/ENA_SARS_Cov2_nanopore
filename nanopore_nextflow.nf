@@ -5,7 +5,7 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
 params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
-params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.nanopore.yaml"
+//params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.nanopore.yaml"
 
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
@@ -96,12 +96,12 @@ process ena_analysis_submit {
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
     path(projects_accounts_csv)
-    path(config_yaml)
+//    path(config_yaml)
 
     output:
-    file("${run_accession}_output/${run_accession}_output.tar.gz")
-    file("${run_accession}_output/${run_accession}_filtered.vcf.gz")
-    file("${run_accession}_output/${run_accession}_consensus.fasta.gz")
+    file("PRJEB43947/${run_accession}_output.tar.gz")
+    file("PRJEB45554/${run_accession}_filtered.vcf.gz")
+    file("PRJEB45619/${run_accession}_consensus.fasta.gz")
     file("successful_submissions.txt")
 
     script:
@@ -142,5 +142,6 @@ workflow {
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
-    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.CONFIG)
+    ena_analysis_submit(map_to_reference.out, params.SECRETS)
+//    , params.CONFIG)
 }
