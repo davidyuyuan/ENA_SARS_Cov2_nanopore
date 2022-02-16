@@ -35,7 +35,8 @@ process map_to_reference {
     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
     input:
-    tuple val(run_accession), val(sample_accession), file(input_file)
+//    tuple val(run_accession), val(sample_accession), file(input_file)
+    tuple val(run_accession), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
 
@@ -47,7 +48,7 @@ process map_to_reference {
 //    file("${run_accession}_output/${run_accession}_consensus.fasta.gz")
     //    , emit: sample_id//    , emit: output_tgz//    , emit: filtered_vcf_gz//    , emit: consensus_fasta_gz
     val(run_accession)
-    val(sample_accession)
+//    val(sample_accession)
     file("${run_accession}_output.tar.gz")
     file("${run_accession}_filtered.vcf.gz")
     file("${run_accession}_consensus.fasta.gz")
@@ -86,11 +87,11 @@ process ena_analysis_submit {
     publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
 
-    container 'davidyuyuan/ena-analysis-submitter:1.0'
+    container 'davidyuyuan/ena-analysis-submitter:2.0'
 
     input:
     val(run_accession)
-    val(sample_accession)
+//    val(sample_accession)
     file(output_tgz)
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
@@ -104,22 +105,28 @@ process ena_analysis_submit {
     file("successful_submissions.txt")
 
     script:
+//    cp -f ${config_yaml} /usr/local/bin/config.yaml
+//    cat /usr/local/bin/config.yaml
+//    echo \${PWD}
+//    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
+//    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
+//    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} &
+//    wait && mv /usr/local/bin/successful_submissions.txt successful_submissions.txt
+//    mkdir -p ${run_accession}_output
+//    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
     """
     webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
     webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
     webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
 
-    cp -f ${config_yaml} /usr/local/bin/config.yaml
-    cat /usr/local/bin/config.yaml
-    echo \${PWD}
-    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
-    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
-    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} &
-    echo \${PWD}
-    wait && mv /usr/local/bin/successful_submissions.txt successful_submissions.txt
-
-    mkdir -p ${run_accession}_output
-    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
+    analysis_submission.py -t -o \${PWD} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
+    analysis_submission.py -t -o \${PWD} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
+    analysis_submission.py -t -o \${PWD} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} &
+    wait
+    
+    mkdir -p PRJEB43947 && mv ${output_tgz} PRJEB43947
+    mkdir -p PRJEB45554 && mv ${filtered_vcf_gz} PRJEB45554
+    mkdir -p PRJEB45619 && mv ${consensus_fasta_gz} PRJEB45619
     """
 }
 
@@ -128,10 +135,11 @@ workflow {
 //    accessions = fetchRunAccessions(params.INDEX)
 //    data = Channel.fromSRA( accessions )
 //    data.view()
+//    , row.sample_accession
     data = Channel
             .fromPath(params.INDEX)
             .splitCsv(header:true, sep:'\t')
-            .map{ row-> tuple(row.run_accession, row.sample_accession, 'ftp://'+row.fastq_ftp) }
+            .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.CONFIG)
