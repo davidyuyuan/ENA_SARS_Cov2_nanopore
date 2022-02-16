@@ -5,7 +5,7 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
 params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
-params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.yaml"
+//params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.yaml"
 
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
@@ -96,40 +96,32 @@ process ena_analysis_submit {
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
     path(projects_accounts_csv)
-    path(config_yaml)
+//    path(config_yaml)
 
     output:
     file("PRJEB43947/${run_accession}_output.tar.gz")
     file("PRJEB45554/${run_accession}_filtered.vcf.gz")
     file("PRJEB45619/${run_accession}_consensus.fasta.gz")
-    file("successful_submissions.txt")
+    file("PRJEB43947/successful_submissions.txt")
+    file("PRJEB45554/successful_submissions.txt")
+    file("PRJEB45619/successful_submissions.txt")
 
     script:
-//    cp -f ${config_yaml} /usr/local/bin/config.yaml
-//    cat /usr/local/bin/config.yaml
-//    echo \${PWD}
-//    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
-//    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
-//    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} &
-//    wait && mv /usr/local/bin/successful_submissions.txt successful_submissions.txt
-//    mkdir -p ${run_accession}_output
-//    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
+//    set
     """
-    set
-    ls -l \${PWD}/nextflow-bin
-
     webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
     webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
     webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
     
-    analysis_submission.py -t -o . -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
-    analysis_submission.py -t -o . -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
-    analysis_submission.py -t -o . -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} &
+    mkdir -p PRJEB43947 PRJEB45554 PRJEB45619
+    analysis_submission.py -t -o \${PWD}/nextflow-bin -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} && mv \${PWD}/nextflow-bin/successful_submissions.txt PRJEB43947 &
+    analysis_submission.py -t -o \${PWD}/nextflow-bin -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} && mv \${PWD}/nextflow-bin/successful_submissions.txt PRJEB45554 &
+    analysis_submission.py -t -o \${PWD}/nextflow-bin -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} && mv \${PWD}/nextflow-bin/successful_submissions.txt PRJEB45619 &
     wait
     
-    mkdir -p PRJEB43947 && mv ${output_tgz} PRJEB43947
-    mkdir -p PRJEB45554 && mv ${filtered_vcf_gz} PRJEB45554
-    mkdir -p PRJEB45619 && mv ${consensus_fasta_gz} PRJEB45619
+    mv ${output_tgz} PRJEB43947
+    mv ${filtered_vcf_gz} PRJEB45554
+    mv ${consensus_fasta_gz} PRJEB45619
     """
 }
 
@@ -145,5 +137,6 @@ workflow {
             .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
-    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.CONFIG)
+    ena_analysis_submit(map_to_reference.out, params.SECRETS)
+//    , params.CONFIG)
 }
