@@ -5,7 +5,7 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
 params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
-params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.nanopore.yaml"
+params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.yaml"
 
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
@@ -105,8 +105,8 @@ process ena_analysis_submit {
     file("successful_submissions.txt")
 
     script:
-//    cp -f ${config_yaml} /usr/local/bin/config.nanopore.yaml
-//    cat /usr/local/bin/config.nanopore.yaml
+//    cp -f ${config_yaml} /usr/local/bin/config.yaml
+//    cat /usr/local/bin/config.yaml
 //    echo \${PWD}
 //    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
 //    cd /usr/local/bin/ && ./analysis_submission.py -t -s ${sample_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
@@ -116,6 +116,7 @@ process ena_analysis_submit {
 //    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
     """
     set
+    ls -l \${PWD}/nextflow-bin
 
     webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
     webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
