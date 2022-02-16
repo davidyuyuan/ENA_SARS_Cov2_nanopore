@@ -118,6 +118,7 @@ process ena_analysis_submit {
     echo ${projectDir}
     ls -l ${workDir}/
     echo $workDir
+    echo \$PATH
 
     webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
     webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
