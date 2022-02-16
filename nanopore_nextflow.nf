@@ -115,8 +115,8 @@ process ena_analysis_submit {
 //    mkdir -p ${run_accession}_output
 //    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output
     """
-    echo ${projectDir}
-    ls -l \${NXF_SCRATCH}/
+    ls -l \${NXF_TEMP}
+    ls -l \${NXF_WORK}
     echo $workDir
     echo \$PATH
 
