@@ -27,7 +27,6 @@ nextflow.enable.dsl=2
 //}
 
 process map_to_reference {
-//    publishDir params.OUTDIR, mode:'copy'
     storeDir params.STOREDIR
 
     cpus 4 /* more is better, parallelizes very well*/
@@ -35,7 +34,6 @@ process map_to_reference {
     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
     input:
-//    tuple val(run_accession), val(sample_accession), file(input_file)
     tuple val(run_accession), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
@@ -48,7 +46,6 @@ process map_to_reference {
 //    file("${run_accession}_output/${run_accession}_consensus.fasta.gz")
     //    , emit: sample_id//    , emit: output_tgz//    , emit: filtered_vcf_gz//    , emit: consensus_fasta_gz
     val(run_accession)
-//    val(sample_accession)
     file("${run_accession}_output.tar.gz")
     file("${run_accession}_filtered.vcf.gz")
     file("${run_accession}_consensus.fasta.gz")
@@ -91,7 +88,6 @@ process ena_analysis_submit {
 
     input:
     val(run_accession)
-//    val(sample_accession)
     file(output_tgz)
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
@@ -130,7 +126,6 @@ workflow {
 //    accessions = fetchRunAccessions(params.INDEX)
 //    data = Channel.fromSRA( accessions )
 //    data.view()
-//    , row.sample_accession
     data = Channel
             .fromPath(params.INDEX)
             .splitCsv(header:true, sep:'\t')
