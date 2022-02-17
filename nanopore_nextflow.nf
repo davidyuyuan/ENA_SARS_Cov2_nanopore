@@ -5,7 +5,6 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
 params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
-//params.CONFIG = "gs://prj-int-dev-covid19-nf-gls/prepro/config.yaml"
 
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
@@ -51,8 +50,8 @@ process map_to_reference {
     file("${run_accession}_consensus.fasta.gz")
 
     script:
-    // curl -o ${run_accession}_1.fastq.gz \$(cat ${input_file})
     """
+    # curl -o ${run_accession}_1.fastq.gz \\\$(cat ${input_file})
     wget -t 0 -O ${run_accession}_1.fastq.gz \$(cat ${input_file})
     cutadapt -u 30 -u -30 -o ${run_accession}.trimmed.fastq ${run_accession}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
 
@@ -92,7 +91,6 @@ process ena_analysis_submit {
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
     path(projects_accounts_csv)
-//    path(config_yaml)
 
     output:
     file("PRJEB43947/${run_accession}_output.tar.gz")
@@ -110,10 +108,9 @@ process ena_analysis_submit {
     webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
     
     mkdir -p PRJEB43947 PRJEB45554 PRJEB45619
-    cp nextflow-bin/config.yaml PRJEB43947 && analysis_submission.py -t -o PRJEB43947 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
-    cp nextflow-bin/config.yaml PRJEB45554 && analysis_submission.py -t -o PRJEB45554 -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
-    cp nextflow-bin/config.yaml PRJEB45619 && analysis_submission.py -t -o PRJEB45619 -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} &
-    wait
+    cp nextflow-bin/config.yaml PRJEB43947 && analysis_submission.py -t -o PRJEB43947 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
+    cp nextflow-bin/config.yaml PRJEB45554 && analysis_submission.py -t -o PRJEB45554 -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
+    cp nextflow-bin/config.yaml PRJEB45619 && analysis_submission.py -t -o PRJEB45619 -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
     
     mv ${output_tgz} PRJEB43947
     mv ${filtered_vcf_gz} PRJEB45554
@@ -133,5 +130,4 @@ workflow {
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
     ena_analysis_submit(map_to_reference.out, params.SECRETS)
-//    , params.CONFIG)
 }
