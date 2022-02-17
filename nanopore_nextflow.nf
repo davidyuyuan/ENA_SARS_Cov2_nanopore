@@ -105,14 +105,18 @@ process ena_analysis_submit {
     script:
 //    set
     """
+    # set
     webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
     webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
     webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
     
     mkdir -p PRJEB43947 PRJEB45554 PRJEB45619
-    analysis_submission.py -t -o \${PWD}/nextflow-bin -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} && mv \${PWD}/nextflow-bin/successful_submissions.txt PRJEB43947 &
-    analysis_submission.py -t -o \${PWD}/nextflow-bin -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} && mv \${PWD}/nextflow-bin/successful_submissions.txt PRJEB45554 &
-    analysis_submission.py -t -o \${PWD}/nextflow-bin -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} && mv \${PWD}/nextflow-bin/successful_submissions.txt PRJEB45619 &
+    cp nextflow-bin/config.yaml PRJEB43947
+    cp nextflow-bin/config.yaml PRJEB45554
+    cp nextflow-bin/config.yaml PRJEB45619
+    analysis_submission.py -t -o PRJEB43947 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password} &
+    analysis_submission.py -t -o PRJEB45554 -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password} &
+    analysis_submission.py -t -o PRJEB45619 -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password} &
     wait
     
     mv ${output_tgz} PRJEB43947
@@ -129,7 +133,7 @@ workflow {
     data = Channel
             .fromPath(params.INDEX)
             .splitCsv(header:true, sep:'\t')
-            .map{ row-> tuple(row.run_accession, 'ftp://'+row.fastq_ftp) }
+            .map{ row-> tuple(row.run_accession, 'ftp://' + row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
     ena_analysis_submit(map_to_reference.out, params.SECRETS)
