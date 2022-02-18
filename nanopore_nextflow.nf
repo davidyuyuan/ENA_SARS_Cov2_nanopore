@@ -121,8 +121,6 @@ process ena_analysis_submit {
 
     script:
     """
-    echo ${study_accession}
-
     line="\$(grep PRJEB43947 ${projects_accounts_csv})"
     webin_id="\$(echo \${line} | cut -d ',' -f 4)"
     webin_password="\$(echo \${line} | cut -d ',' -f 5)"
@@ -163,8 +161,6 @@ process dcc_analysis_submit {
 
     script:
     """
-    echo ${study_accession}
-
     line="\$(grep ${study_accession} ${projects_accounts_csv})"
     webin_id="\$(echo \${line} | cut -d ',' -f 4)"
     webin_password="\$(echo \${line} | cut -d ',' -f 5)"
@@ -172,14 +168,15 @@ process dcc_analysis_submit {
     mkdir -p ${run_accession}_output/${study_accession}
     cp nextflow-bin/config.yaml ${run_accession}_output/${study_accession}
     analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
-    cat ${run_accession}_output/${study_accession}/successful_submissions.txt > successful_submissions.txt
+    #cat ${run_accession}_output/${study_accession}/successful_submissions.txt > successful_submissions.txt
     analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
-    cat ${run_accession}_output/${study_accession}/successful_submissions.txt >> successful_submissions.txt
+    #cat ${run_accession}_output/${study_accession}/successful_submissions.txt >> successful_submissions.txt
     analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
-    cat ${run_accession}_output/${study_accession}/successful_submissions.txt >> successful_submissions.txt
-    rm ${run_accession}_output/${study_accession}/successful_submissions.txt
+    #cat ${run_accession}_output/${study_accession}/successful_submissions.txt >> successful_submissions.txt
+    #rm ${run_accession}_output/${study_accession}/successful_submissions.txt
 
-    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} successful_submissions.txt ${run_accession}_output/${study_accession}
+    #successful_submissions.txt 
+    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output/${study_accession}
     """
     }
 
