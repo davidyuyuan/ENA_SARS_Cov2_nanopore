@@ -117,7 +117,7 @@ process ena_analysis_submit {
     file("${run_accession}_output/PRJEB45619/successful_submissions.txt")
 
     when:
-    ${study_accession} == 'PRJEB43947' || ${study_accession} == 'PRJEB45554' || ${study_accession} == 'PRJEB45619' || ${study_accession} == 'PRJEB455555'
+    study_accession == 'PRJEB43947' || study_accession == 'PRJEB45554' || study_accession == 'PRJEB45619' || study_accession == 'PRJEB455555'
 
     script:
     """
@@ -159,7 +159,7 @@ process dcc_analysis_submit {
     file("${run_accession}_output/${study_accession}/successful_submissions.txt")
 
     when:
-    !( ${study_accession} == 'PRJEB43947' || ${study_accession} == 'PRJEB45554' || ${study_accession} == 'PRJEB45619' || ${study_accession} == 'PRJEB455555' )
+    !( study_accession == 'PRJEB43947' || study_accession == 'PRJEB45554' || study_accession == 'PRJEB45619' || study_accession == 'PRJEB455555' )
 
     script:
     """
