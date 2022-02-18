@@ -37,6 +37,8 @@ process map_to_reference {
     tuple val(run_accession), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
+    path(projects_accounts_csv)
+    val(study_accession)
 
     output:
 //    file("${run_accession}_output/${run_accession}.bam")
@@ -52,8 +54,20 @@ process map_to_reference {
 
     script:
     """
-    # curl -o ${run_accession}_1.fastq.gz \\\$(cat ${input_file})
-    wget -t 0 -O ${run_accession}_1.fastq.gz \$(cat ${input_file})
+    # curl -o ${run_accession}_1.fastq.gz \$(cat ${input_file})
+
+    line="\$(grep ${study_accession} ${projects_accounts_csv})"
+    ftp_id="\$(echo \${line} | cut -d ',' -f 3)"
+    ftp_password="\$(echo \${line} | cut -d ',' -f 6)"
+    
+    echo \${ftp_id}
+    echo \${ftp_password}
+    
+    if [ "\${ftp_id}" = 'public' ]; then
+        wget -t 0 -O ${run_accession}_1.fastq.gz \$(cat ${input_file})
+    else
+        wget -t 0 -O ${run_accession}_1.fastq.gz \$(cat ${input_file}) --user=\${ftp_id} --password=\${ftp_password}
+    fi
     cutadapt -u 30 -u -30 -o ${run_accession}.trimmed.fastq ${run_accession}_1.fastq.gz -m 75 -j ${task.cpus} --quiet
 
     minimap2 -Y -t ${task.cpus} -x map-ont -a ${sars2_fasta} ${run_accession}.trimmed.fastq | samtools view -bF 4 - | samtools sort -@ ${task.cpus} - > ${run_accession}.bam
@@ -109,9 +123,9 @@ process ena_analysis_submit {
     """
     echo ${study_accession}
 
-    webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
-    webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
-    webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
+    line="\$(grep PRJEB43947 ${projects_accounts_csv})"
+    webin_id="\$(echo \${line} | cut -d ',' -f 4)"
+    webin_password="\$(echo \${line} | cut -d ',' -f 5)"
     
     mkdir -p ${run_accession}_output/PRJEB43947 ${run_accession}_output/PRJEB45554 ${run_accession}_output/PRJEB45619
     cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB43947 && analysis_submission.py -t -o ${run_accession}_output/PRJEB43947 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
@@ -151,9 +165,9 @@ process dcc_analysis_submit {
     """
     echo ${study_accession}
 
-    webin_line="\$(grep ${study_accession} ${projects_accounts_csv})"
-    webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
-    webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
+    line="\$(grep ${study_accession} ${projects_accounts_csv})"
+    webin_id="\$(echo \${line} | cut -d ',' -f 4)"
+    webin_password="\$(echo \${line} | cut -d ',' -f 5)"
     
     mkdir -p ${run_accession}_output/${study_accession}
     cp nextflow-bin/config.yaml ${run_accession}_output/${study_accession}
@@ -179,7 +193,7 @@ workflow {
             .splitCsv(header:true, sep:'\t')
             .map{ row-> tuple(row.run_accession, 'ftp://' + row.fastq_ftp) }
 
-    map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
+    map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI, params.SECRETS, params.STUDY)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
 }
