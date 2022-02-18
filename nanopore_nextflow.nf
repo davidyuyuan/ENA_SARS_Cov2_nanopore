@@ -41,12 +41,6 @@ process map_to_reference {
     val(study_accession)
 
     output:
-//    file("${run_accession}_output/${run_accession}.bam")
-//    file("${run_accession}_output/${run_accession}.coverage.gz")
-//    file("${run_accession}_output/${run_accession}.annot.vcf.gz")
-//    file("${run_accession}_output/${run_accession}_filtered.vcf.gz")
-//    file("${run_accession}_output/${run_accession}_consensus.fasta.gz")
-    //    , emit: sample_id//    , emit: output_tgz//    , emit: filtered_vcf_gz//    , emit: consensus_fasta_gz
     val(run_accession)
     file("${run_accession}_output.tar.gz")
     file("${run_accession}_filtered.vcf.gz")
@@ -59,9 +53,6 @@ process map_to_reference {
     line="\$(grep ${study_accession} ${projects_accounts_csv})"
     ftp_id="\$(echo \${line} | cut -d ',' -f 3)"
     ftp_password="\$(echo \${line} | cut -d ',' -f 6)"
-    
-    echo "\${ftp_id}"
-    echo "\${ftp_password}"
     
     if [ "\${ftp_id}" = 'public' ]; then
         wget -t 0 -O ${run_accession}_1.fastq.gz \$(cat ${input_file})
@@ -94,55 +85,6 @@ process map_to_reference {
     """
 }
 
-//process ena_analysis_submit {
-//    publishDir params.OUTDIR, mode:'move'
-//    storeDir params.STOREDIR
-//
-//    container 'davidyuyuan/ena-analysis-submitter:2.0'
-//
-//    input:
-//    val(run_accession)
-//    file(output_tgz)
-//    file(filtered_vcf_gz)
-//    file(consensus_fasta_gz)
-//    path(projects_accounts_csv)
-//    val(study_accession)
-//
-//    output:
-//    file("${run_accession}_output/PRJEB43947/${run_accession}_output.tar.gz")
-//    file("${run_accession}_output/PRJEB45554/${run_accession}_filtered.vcf.gz")
-//    file("${run_accession}_output/PRJEB45619/${run_accession}_consensus.fasta.gz")
-//    file("${run_accession}_output/PRJEB43947/successful_submissions.txt")
-//    file("${run_accession}_output/PRJEB45554/successful_submissions.txt")
-//    file("${run_accession}_output/PRJEB45619/successful_submissions.txt")
-//
-//    when:
-//    study_accession == 'PRJEB43947' || study_accession == 'PRJEB45554' || study_accession == 'PRJEB45619' || study_accession == 'PRJEB45555'
-//
-//    script:
-//    """
-//    line="\$(grep PRJEB43947 ${projects_accounts_csv})"
-//    webin_id="\$(echo \${line} | cut -d ',' -f 4)"
-//    webin_password="\$(echo \${line} | cut -d ',' -f 5)"
-//
-//    mkdir -p ${run_accession}_output/${study_accession}
-//    cp nextflow-bin/config.yaml ${run_accession}_output/${study_accession}
-//    analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
-//    analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
-//    analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
-//    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output/${study_accession}
-//
-//    #mkdir -p ${run_accession}_output/PRJEB43947 ${run_accession}_output/PRJEB45554 ${run_accession}_output/PRJEB45619
-//    #cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB43947 && analysis_submission.py -t -o ${run_accession}_output/PRJEB43947 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
-//    #cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB45554 && analysis_submission.py -t -o ${run_accession}_output/PRJEB45554 -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
-//    #cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB45619 && analysis_submission.py -t -o ${run_accession}_output/PRJEB45619 -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
-//
-//    #mv ${output_tgz} ${run_accession}_output/PRJEB43947
-//    #mv ${filtered_vcf_gz} ${run_accession}_output/PRJEB45554
-//    #mv ${consensus_fasta_gz} ${run_accession}_output/PRJEB45619
-//    """
-//}
-
 process ena_analysis_submit {
     publishDir params.OUTDIR, mode:'move'
     storeDir params.STOREDIR
@@ -162,9 +104,6 @@ process ena_analysis_submit {
     file("${run_accession}_output/${study_accession}/${run_accession}_filtered.vcf.gz")
     file("${run_accession}_output/${study_accession}/${run_accession}_consensus.fasta.gz")
     file("${run_accession}_output/${study_accession}/successful_submissions.txt")
-
-//    when:
-//    !( study_accession == 'PRJEB43947' || study_accession == 'PRJEB45554' || study_accession == 'PRJEB45619' || study_accession == 'PRJEB455555' )
 
     script:
     """
@@ -199,5 +138,4 @@ workflow {
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI, params.SECRETS, params.STUDY)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
-//    dcc_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
 }
