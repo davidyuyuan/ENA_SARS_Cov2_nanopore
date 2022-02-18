@@ -60,8 +60,8 @@ process map_to_reference {
     ftp_id="\$(echo \${line} | cut -d ',' -f 3)"
     ftp_password="\$(echo \${line} | cut -d ',' -f 6)"
     
-    echo \${ftp_id}
-    echo \${ftp_password}
+    echo "\${ftp_id}"
+    echo "\${ftp_password}"
     
     if [ "\${ftp_id}" = 'public' ]; then
         wget -t 0 -O ${run_accession}_1.fastq.gz \$(cat ${input_file})
@@ -78,7 +78,7 @@ process map_to_reference {
     bgzip ${run_accession}_filtered.vcf
 
     samtools mpileup -a -A -Q 0 -d 8000 -f ${sars2_fasta} ${run_accession}.bam > ${run_accession}.pileup
-    cat ${run_accession}.pileup | awk '{print \$2,","\$3,","\$4}' > ${run_accession}.coverage
+    cat ${run_accession}.pileup | awk '{print "\$2,","\$3,","\$4}' > ${run_accession}.coverage
     tabix ${run_accession}_filtered.vcf.gz
     vcf2consensus.py -v ${run_accession}_filtered.vcf.gz -d ${run_accession}.coverage -r ${sars2_fasta} -o ${run_accession}_consensus.fasta -dp 30 -n ${run_accession}
     bgzip ${run_accession}.coverage
