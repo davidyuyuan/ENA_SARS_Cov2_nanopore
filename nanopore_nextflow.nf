@@ -195,5 +195,5 @@ workflow {
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI, params.SECRETS, params.STUDY)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
-    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
+    dcc_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
 }
