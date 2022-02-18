@@ -48,8 +48,6 @@ process map_to_reference {
 
     script:
     """
-    # curl -o ${run_accession}_1.fastq.gz \$(cat ${input_file})
-
     line="\$(grep ${study_accession} ${projects_accounts_csv})"
     ftp_id="\$(echo \${line} | cut -d ',' -f 3)"
     ftp_password="\$(echo \${line} | cut -d ',' -f 6)"
