@@ -5,6 +5,7 @@ params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 
 params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
 params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
+params.STUDY = 'PRJEB43947'
 
 params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
@@ -80,7 +81,7 @@ process map_to_reference {
 }
 
 process ena_analysis_submit {
-    publishDir params.OUTDIR, mode:'copy'
+    publishDir params.OUTDIR, mode:'move'
     storeDir params.STOREDIR
 
     container 'davidyuyuan/ena-analysis-submitter:2.0'
@@ -91,6 +92,7 @@ process ena_analysis_submit {
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
     path(projects_accounts_csv)
+    val(study_accession)
 
     output:
     file("${run_accession}_output/PRJEB43947/${run_accession}_output.tar.gz")
@@ -100,9 +102,13 @@ process ena_analysis_submit {
     file("${run_accession}_output/PRJEB45554/successful_submissions.txt")
     file("${run_accession}_output/PRJEB45619/successful_submissions.txt")
 
+    when:
+    ${study_accession} == 'PRJEB43947' || ${study_accession} == 'PRJEB45554' || ${study_accession} == 'PRJEB45619' || ${study_accession} == 'PRJEB455555'
+
     script:
     """
-    # set
+    echo ${study_accession}
+
     webin_line="\$(grep PRJEB43947 ${projects_accounts_csv})"
     webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
     webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
@@ -111,15 +117,57 @@ process ena_analysis_submit {
     cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB43947 && analysis_submission.py -t -o ${run_accession}_output/PRJEB43947 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
     cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB45554 && analysis_submission.py -t -o ${run_accession}_output/PRJEB45554 -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
     cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB45619 && analysis_submission.py -t -o ${run_accession}_output/PRJEB45619 -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
-    # cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB43947 && analysis_submission.py -o ${run_accession}_output/PRJEB43947 -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \\${webin_id} -ap \\${webin_password}
-    # cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB45554 && analysis_submission.py -o ${run_accession}_output/PRJEB45554 -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \\${webin_id} -ap \\${webin_password}
-    # cp nextflow-bin/config.yaml ${run_accession}_output/PRJEB45619 && analysis_submission.py -o ${run_accession}_output/PRJEB45619 -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \\${webin_id} -ap \\${webin_password}
     
     mv ${output_tgz} ${run_accession}_output/PRJEB43947
     mv ${filtered_vcf_gz} ${run_accession}_output/PRJEB45554
     mv ${consensus_fasta_gz} ${run_accession}_output/PRJEB45619
     """
 }
+
+process dcc_analysis_submit {
+    publishDir params.OUTDIR, mode:'move'
+    storeDir params.STOREDIR
+
+    container 'davidyuyuan/ena-analysis-submitter:2.0'
+
+    input:
+    val(run_accession)
+    file(output_tgz)
+    file(filtered_vcf_gz)
+    file(consensus_fasta_gz)
+    path(projects_accounts_csv)
+    val(study_accession)
+
+    output:
+    file("${run_accession}_output/${study_accession}/${run_accession}_output.tar.gz")
+    file("${run_accession}_output/${study_accession}/${run_accession}_filtered.vcf.gz")
+    file("${run_accession}_output/${study_accession}/${run_accession}_consensus.fasta.gz")
+    file("${run_accession}_output/${study_accession}/successful_submissions.txt")
+
+    when:
+    !( ${study_accession} == 'PRJEB43947' || ${study_accession} == 'PRJEB45554' || ${study_accession} == 'PRJEB45619' || ${study_accession} == 'PRJEB455555' )
+
+    script:
+    """
+    echo ${study_accession}
+
+    webin_line="\$(grep ${study_accession} ${projects_accounts_csv})"
+    webin_id="\$(echo \${webin_line} | cut -d ',' -f 4)"
+    webin_password="\$(echo \${webin_line} | cut -d ',' -f 5)"
+    
+    mkdir -p ${run_accession}_output/${study_accession}
+    cp nextflow-bin/config.yaml ${run_accession}_output/${study_accession}
+    analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
+    cat ${run_accession}_output/${study_accession}/successful_submissions.txt > successful_submissions.txt
+    analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
+    cat ${run_accession}_output/${study_accession}/successful_submissions.txt >> successful_submissions.txt
+    analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
+    cat ${run_accession}_output/${study_accession}/successful_submissions.txt >> successful_submissions.txt
+    rm ${run_accession}_output/${study_accession}/successful_submissions.txt
+
+    mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} successful_submissions.txt ${run_accession}_output/${study_accession}
+    """
+    }
 
 workflow {
 //    Requires local input.
@@ -132,5 +180,6 @@ workflow {
             .map{ row-> tuple(row.run_accession, 'ftp://' + row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI)
-    ena_analysis_submit(map_to_reference.out, params.SECRETS)
+    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
+    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
 }
