@@ -11,7 +11,7 @@ params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
 params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
 
 //import nextflow.splitter.CsvSplitter
-nextflow.enable.dsl=2
+nextflow.enable.dsl = 2
 
 //def fetchRunAccessions(String tsv ) {
 //    CsvSplitter splitter = new CsvSplitter().options( header:true, sep:'\t' )
@@ -85,7 +85,7 @@ process map_to_reference {
 }
 
 process ena_analysis_submit {
-    publishDir params.OUTDIR, mode:'move'
+    publishDir params.OUTDIR, mode: 'move'
     storeDir params.STOREDIR
 
     container 'davidyuyuan/ena-analysis-submitter:2.0'
@@ -124,7 +124,7 @@ process ena_analysis_submit {
     fi
     mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output/${study_accession}
     """
-    }
+}
 
 workflow {
 //    Requires local input.
@@ -133,8 +133,8 @@ workflow {
 //    data.view()
     data = Channel
             .fromPath(params.INDEX)
-            .splitCsv(header:true, sep:'\t')
-            .map{ row-> tuple(row.run_accession, row.sample_accession, 'ftp://' + row.fastq_ftp) }
+            .splitCsv(header: true, sep: '\t')
+            .map { row -> tuple(row.run_accession, row.sample_accession, 'ftp://' + row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI, params.SECRETS, params.STUDY)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
