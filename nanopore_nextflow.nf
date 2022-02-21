@@ -34,7 +34,7 @@ process map_to_reference {
     container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
 
     input:
-    tuple val(run_accession), file(input_file)
+    tuple val(run_accession), val(sample_accession), file(input_file)
     path(sars2_fasta)
     path(sars2_fasta_fai)
     path(projects_accounts_csv)
@@ -42,6 +42,7 @@ process map_to_reference {
 
     output:
     val(run_accession)
+    val(sample_accession)
     file("${run_accession}_output.tar.gz")
     file("${run_accession}_filtered.vcf.gz")
     file("${run_accession}_consensus.fasta.gz")
@@ -91,6 +92,7 @@ process ena_analysis_submit {
 
     input:
     val(run_accession)
+    val(sample_accession)
     file(output_tgz)
     file(filtered_vcf_gz)
     file(consensus_fasta_gz)
@@ -112,13 +114,13 @@ process ena_analysis_submit {
     mkdir -p ${run_accession}_output/${study_accession}
     cp nextflow-bin/config.yaml ${run_accession}_output/${study_accession}
     if [ "${study_accession}" = 'PRJEB45555' ]; then
-        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB43947 -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
-        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB45554 -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
-        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB45619 -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
+        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB43947 -s ${sample_accession} -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
+        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB45554 -s ${sample_accession} -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
+        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p PRJEB45619 -s ${sample_accession} -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
     else
-        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
-        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
-        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
+        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -s ${sample_accession} -r ${run_accession} -f ${output_tgz} -a PATHOGEN_ANALYSIS -au \${webin_id} -ap \${webin_password}
+        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -s ${sample_accession} -r ${run_accession} -f ${filtered_vcf_gz} -a COVID19_FILTERED_VCF -au \${webin_id} -ap \${webin_password}
+        analysis_submission.py -t -o ${run_accession}_output/${study_accession} -p ${study_accession} -s ${sample_accession} -r ${run_accession} -f ${consensus_fasta_gz} -a COVID19_CONSENSUS -au \${webin_id} -ap \${webin_password}
     fi
     mv ${output_tgz} ${filtered_vcf_gz} ${consensus_fasta_gz} ${run_accession}_output/${study_accession}
     """
@@ -132,7 +134,7 @@ workflow {
     data = Channel
             .fromPath(params.INDEX)
             .splitCsv(header:true, sep:'\t')
-            .map{ row-> tuple(row.run_accession, 'ftp://' + row.fastq_ftp) }
+            .map{ row-> tuple(row.run_accession, row.sample_accession, 'ftp://' + row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI, params.SECRETS, params.STUDY)
     ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY)
