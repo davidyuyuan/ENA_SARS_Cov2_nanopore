@@ -84,6 +84,7 @@ process map_to_reference {
     """
 }
 
+// Same process duplicated in both pipelines due to a limitation in Nextflow
 process ena_analysis_submit {
     publishDir params.OUTDIR, mode: 'move'
     storeDir params.STOREDIR
