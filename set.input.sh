@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-dataset_name=${2:-'datahub_metadata'}
-project_id=${3:-'prj-int-dev-covid19-nf-gls'}
-location=${4:-'europe-west4'}
-
-# DIR where the current script resides
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+dataset_name=${1:-'datahub_metadata'}
+project_id=${2:-'prj-int-dev-covid19-nf-gls'}
+#location=${3:-'europe-west4'}
 
 # Create bucket and dataset
 #gsutil mb -p "${project_id}" -l "${location}" "gs://${dataset_name}"
 #bq --location="${location}" mk --dataset "${project_id}:${dataset_name}"
+
+# DIR where the current script resides
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Get all raw reads for Nanopore
 curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
