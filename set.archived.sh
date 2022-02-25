@@ -27,4 +27,5 @@ curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'result=ana
   "https://www.ebi.ac.uk/ena/portal/api/search" > "${output_dir}/analysis_archived.tsv"
 gsutil -m cp "${output_dir}/analysis_archived.tsv" "gs://${dataset_name}/analysis_archived.tsv"
 bq --project_id="${project_id}" load --source_format=CSV --replace=true --skip_leading_rows=1 --field_delimiter=tab \
-  --autodetect "${dataset_name}.analysis_archived" "gs://${dataset_name}/analysis_archived.tsv" analysis_accession:STRING,sample_accession:STRING,run_ref:STRING
+  --autodetect "${dataset_name}.analysis_archived" "gs://${dataset_name}/analysis_archived.tsv" \
+  "analysis_accession:STRING,sample_accession:STRING,run_ref:STRING"
