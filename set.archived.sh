@@ -28,3 +28,7 @@ gsutil -m cp "${output_dir}/analysis_archived.tsv" "gs://${dataset_name}/analysi
 bq --project_id="${project_id}" load --source_format=CSV --replace=true --skip_leading_rows=1 --field_delimiter=tab \
   --autodetect "${dataset_name}.analysis_archived" "gs://${dataset_name}/analysis_archived.tsv" \
   "analysis_accession:STRING,sample_accession:STRING,run_ref:STRING"
+
+# delete runs from sra_processing
+sql="DELETE FROM ${dataset_name}.sra_processing T1 WHERE T1.run_accession IN (SELECT T2.run_ref FROM ${dataset_name}.analysis_archived )"
+bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false "${sql}"
