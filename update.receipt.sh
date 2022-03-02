@@ -5,7 +5,7 @@ snapshot_date=${2:-'2022-02-25'}
 pipeline=${3:-'nanopore'}
 profile=${4:-'gls'}
 root_dir=${5:-'gs://prj-int-dev-covid19-nf-gls'}
-dataset_name=${6:-'datahub_metadata'}
+dataset_name=${6:-'sarscov2_metadata'}
 project_id=${7:-'prj-int-dev-covid19-nf-gls'}
 
 # DIR where the current script resides

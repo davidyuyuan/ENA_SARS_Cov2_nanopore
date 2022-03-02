@@ -3,7 +3,7 @@
 j=${1:-'0'}
 snapshot_date=${2:-'2022-02-25'}
 pipeline=${3:-'nanopore'}
-dataset_name=${4:-'datahub_metadata'}
+dataset_name=${4:-'sarscov2_metadata'}
 project_id=${5:-'prj-int-dev-covid19-nf-gls'}
 
 # DIR where the current script resides
@@ -12,7 +12,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 output_dir="${DIR}/results/${snapshot_date}/output"
 mkdir -p "${output_dir}"
 
-table_name="${pipeline}_to_be_processed"
+#table_name="${pipeline}_to_be_processed"
 
 # Results and metadata
 function gen_metadata {
