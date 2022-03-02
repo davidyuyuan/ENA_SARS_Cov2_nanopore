@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
-snapshot_date=${1:-'2022-02-25'}
-dataset_name=${2:-'sarscov2_metadata'}
-project_id=${3:-'prj-int-dev-covid19-nf-gls'}
+dataset_name=${1:-'sarscov2_metadata'}
+project_id=${2:-'prj-int-dev-covid19-nf-gls'}
 
 # DIR where the current script resides
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-output_dir="${DIR}/results/${snapshot_date}/output"
+output_dir="${DIR}/results/"
 mkdir -p "${output_dir}"
 
 ###########################################################

@@ -35,4 +35,9 @@ row_count=$(bq --project_id="${project_id}" --format=csv query --use_legacy_sql=
 if [ "${row_count}" = "0" ]; then
   sql="SELECT * FROM ${dataset_name}.sra_index LIMIT 0"
   bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false --destination_table "${dataset_name}.sra_processing" "${sql}"
+else
+  sql="TRUNCATE TABLE ${dataset_name}.sra_processing"
+  bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false "${sql}"
 fi
+
+"DIR/set.archived.sh" "${dataset_name}" "${project_id}"
