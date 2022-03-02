@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 snapshot_date=${1:-'2022-02-25'}
-dataset_name=${2:-'datahub_metadata'}
+dataset_name=${2:-'sarscov2_metadata'}
 project_id=${3:-'prj-int-dev-covid19-nf-gls'}
 
 # DIR where the current script resides
