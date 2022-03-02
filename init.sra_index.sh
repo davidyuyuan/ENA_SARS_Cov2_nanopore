@@ -27,7 +27,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 #  "https://www.ebi.ac.uk/ena/portal/api/search" > "${DIR}/nanopore_index.tsv" && \
 #  gsutil -m cp "${DIR}/nanopore_index.tsv" "gs://${dataset_name}/nanopore_index.tsv" && \
   bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=1 --field_delimiter=tab \
-  --autodetect --max_bad_records=296 "${dataset_name}.sra_index" "gs://${dataset_name}/nanopore_index.tsv"
+  --max_bad_records=296 "${dataset_name}.sra_index" "gs://${dataset_name}/nanopore_index.tsv"
 
 # copy table schema if it does not exist
 sql="SELECT COUNT(*) AS total FROM ${dataset_name}.__TABLES_SUMMARY__ WHERE table_id = '""sra_processing'"
