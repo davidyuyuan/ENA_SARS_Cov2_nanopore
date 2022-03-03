@@ -5,12 +5,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 j=${1:-'0'}
 snapshot_date=${2:-'2022-02-25'}
-pipeline=${3:-'nanopore'}
-nextflow_script=${4:-"${HOME}/ENA_SARS_Cov2_nanopore/main.nf"}
-profile=${5:-'gls'}
-root_dir=${6:-'gs://prj-int-dev-covid19-nf-gls'}
-dataset_name=${7:-'sarscov2_metadata'}
-batch_size=${8:-'10000'}
+batch_size=${3:-'1'}
+pipeline=${4:-'nanopore'}
+nextflow_script=${5:-"${HOME}/ENA_SARS_Cov2_nanopore/main.nf"}
+profile=${6:-'gls'}
+root_dir=${7:-'gs://prj-int-dev-covid19-nf-gls'}
+dataset_name=${8:-'sarscov2_metadata'}
 project_id=${9:-'prj-int-dev-covid19-nf-gls'}
 
 #offset=$((j * batch_size))
@@ -18,7 +18,6 @@ table_name="${pipeline}_to_be_processed"
 config_dir=$(dirname "${nextflow_script}")
 
 # OFFSET ${offset}
-
 sql="SELECT * FROM ${project_id}.${dataset_name}.${table_name} LIMIT ${batch_size}"
 bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false --max_rows="${batch_size}" "${sql}" \
   | awk 'BEGIN{ FS=","; OFS="\t" }{$1=$1; print $0 }' > "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv"
