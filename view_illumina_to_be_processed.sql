@@ -1,4 +1,5 @@
-SELECT
+CREATE VIEW prj-int-dev-covid19-nf-gls.sarscov2_metadata.illumina_to_be_processed
+AS SELECT
   *
 FROM
   `prj-int-dev-covid19-nf-gls.sarscov2_metadata.sra_index` T1

@@ -29,7 +29,9 @@ curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
   bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=1 --field_delimiter=tab \
   --max_bad_records=296 "${dataset_name}.sra_index" "gs://${dataset_name}/nanopore_index.tsv"
 
+########################################
 # copy table schema if it does not exist
+########################################
 sql="SELECT COUNT(*) AS total FROM ${dataset_name}.__TABLES_SUMMARY__ WHERE table_id = '""sra_processing'"
 row_count=$(bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false "${sql}" | grep -v total)
 if [ "${row_count}" = "0" ]; then
@@ -40,4 +42,21 @@ else
   bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false "${sql}"
 fi
 
-"DIR/set.archived.sh" "${dataset_name}" "${project_id}"
+#######################
+# Set analyses archived
+#######################
+"${DIR}/set.archived.sh" "${dataset_name}" "${project_id}"
+
+######################################
+# Create views of SRAs to be processed
+######################################
+sql="SELECT COUNT(*) AS total FROM ${dataset_name}.__TABLES_SUMMARY__ WHERE table_id = '""nanopore_to_be_processed'"
+row_count=$(bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false "${sql}" | grep -v total)
+if [ "${row_count}" = "0" ]; then
+  bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false < "${DIR}/view_nanopore_to_be_processed.sql"
+fi
+sql="SELECT COUNT(*) AS total FROM ${dataset_name}.__TABLES_SUMMARY__ WHERE table_id = '""illumina_to_be_processed'"
+row_count=$(bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false "${sql}" | grep -v total)
+if [ "${row_count}" = "0" ]; then
+  bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false < "${DIR}/view_illumina_to_be_processed.sql"
+fi
