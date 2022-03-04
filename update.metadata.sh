@@ -32,6 +32,9 @@ function gen_metadata {
   sort -u "${metadata}.tmp" >> "${metadata}" && rm "${metadata}.tmp"
 }
 
+##################################
+# Update submission_metadata table
+##################################
 gen_metadata "${output_dir}/${snapshot_date}_${pipeline}_${j}_receipts.tsv" "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" "${output_dir}/${pipeline}_metadata_${j}.tsv" "${snapshot_date}"
 gsutil -m cp "${output_dir}/${pipeline}_metadata_${j}.tsv" "gs://${dataset_name}/${pipeline}_metadata_${j}.tsv"
 bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=1 --field_delimiter=tab \

@@ -13,23 +13,26 @@ root_dir=${7:-'gs://prj-int-dev-covid19-nf-gls'}
 dataset_name=${8:-'sarscov2_metadata'}
 project_id=${9:-'prj-int-dev-covid19-nf-gls'}
 
-#offset=$((j * batch_size))
+offset=$((j * batch_size))
 table_name="${pipeline}_to_be_processed"
 config_dir=$(dirname "${nextflow_script}")
 pipeline_dir="${root_dir}/${snapshot_date}/${pipeline}_${j}"
 output_dir="${DIR}/results/${snapshot_date}"
 mkdir -p "${output_dir}"
 
-# OFFSET ${offset}
-sql="SELECT * FROM ${project_id}.${dataset_name}.${table_name} LIMIT ${batch_size}"
+##############################
+# Retrieve and reserve a batch
+##############################
+sql="SELECT * FROM ${project_id}.${dataset_name}.${table_name} LIMIT ${batch_size} OFFSET ${offset}"
 bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false --max_rows="${batch_size}" "${sql}" \
   | awk 'BEGIN{ FS=","; OFS="\t" }{$1=$1; print $0 }' > "${output_dir}/${table_name}_${j}.tsv"
-
-# Reserve ${table_name}_${j}.tsv
 gsutil -m cp "${output_dir}/${table_name}_${j}.tsv" "gs://${dataset_name}/${table_name}_${j}.tsv" && \
   bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=1 --field_delimiter=tab \
   --max_bad_records=0 "${dataset_name}.sra_processing" "gs://${dataset_name}/${table_name}_${j}.tsv"
 
+#################################
+# Process the batch with Nextflow
+#################################
 nextflow -C "${config_dir}/nextflow.config" run "${nextflow_script}" -profile "${profile}" \
       --INDEX "${output_dir}/${table_name}_${j}.tsv" \
       --OUTDIR "${pipeline_dir}/publishDir" \
@@ -37,6 +40,9 @@ nextflow -C "${config_dir}/nextflow.config" run "${nextflow_script}" -profile "$
       -w "${pipeline_dir}/workDir" \
       -with-tower
 
+########################################################################################
+# Update submission receipt and submission metadata as well as all the analyses archived
+########################################################################################
 "${DIR}/update.receipt.sh" "${j}" "${snapshot_date}" "${pipeline}" "${profile}" "${root_dir}" "${dataset_name}" "${project_id}"
 "${DIR}/update.metadata.sh" "${j}" "${snapshot_date}" "${pipeline}" "${dataset_name}" "${project_id}"
 "${DIR}/set.archived.sh" "${dataset_name}" "${project_id}"
