@@ -34,6 +34,6 @@ nextflow -C "${config_dir}/nextflow.config" run "${nextflow_script}" -profile "$
       -w "${root_dir}/${snapshot_date}/${pipeline}_${j}/workDir" \
       -with-tower
 
-"${DIR}/update.metadata.sh" "${j}" "${snapshot_date}" "${pipeline}" "${dataset_name}" "${project_id}"
 "${DIR}/update.receipt.sh" "${j}" "${snapshot_date}" "${pipeline}" "${profile}" "${root_dir}" "${dataset_name}" "${project_id}"
+"${DIR}/update.metadata.sh" "${j}" "${snapshot_date}" "${pipeline}" "${dataset_name}" "${project_id}"
 "${DIR}/set.archived.sh" "${dataset_name}" "${project_id}"
