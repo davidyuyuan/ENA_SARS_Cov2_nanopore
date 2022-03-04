@@ -16,22 +16,25 @@ project_id=${9:-'prj-int-dev-covid19-nf-gls'}
 #offset=$((j * batch_size))
 table_name="${pipeline}_to_be_processed"
 config_dir=$(dirname "${nextflow_script}")
+pipeline_dir="${root_dir}/${snapshot_date}/${pipeline}_${j}"
+output_dir="${DIR}/results/${snapshot_date}"
+mkdir -p "${output_dir}"
 
 # OFFSET ${offset}
 sql="SELECT * FROM ${project_id}.${dataset_name}.${table_name} LIMIT ${batch_size}"
 bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false --max_rows="${batch_size}" "${sql}" \
-  | awk 'BEGIN{ FS=","; OFS="\t" }{$1=$1; print $0 }' > "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv"
+  | awk 'BEGIN{ FS=","; OFS="\t" }{$1=$1; print $0 }' > "${output_dir}/${table_name}_${j}.tsv"
 
 # Reserve ${table_name}_${j}.tsv
-gsutil -m cp "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" "gs://${dataset_name}/${table_name}_${j}.tsv" && \
+gsutil -m cp "${output_dir}/${table_name}_${j}.tsv" "gs://${dataset_name}/${table_name}_${j}.tsv" && \
   bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=1 --field_delimiter=tab \
   --max_bad_records=0 "${dataset_name}.sra_processing" "gs://${dataset_name}/${table_name}_${j}.tsv"
 
 nextflow -C "${config_dir}/nextflow.config" run "${nextflow_script}" -profile "${profile}" \
-      --INDEX "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" \
-      --OUTDIR "${root_dir}/${snapshot_date}/${pipeline}_${j}/publishDir" \
-      --STOREDIR "${root_dir}/${snapshot_date}/${pipeline}_${j}/storeDir" \
-      -w "${root_dir}/${snapshot_date}/${pipeline}_${j}/workDir" \
+      --INDEX "${output_dir}/${table_name}_${j}.tsv" \
+      --OUTDIR "${pipeline_dir}/publishDir" \
+      --STOREDIR "${pipeline_dir}/storeDir" \
+      -w "${pipeline_dir}/workDir" \
       -with-tower
 
 "${DIR}/update.receipt.sh" "${j}" "${snapshot_date}" "${pipeline}" "${profile}" "${root_dir}" "${dataset_name}" "${project_id}"
