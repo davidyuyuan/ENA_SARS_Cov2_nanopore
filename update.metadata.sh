@@ -12,7 +12,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 output_dir="${DIR}/results/${snapshot_date}/output"
 mkdir -p "${output_dir}"
 
-#table_name="${pipeline}_to_be_processed"
+table_name="${pipeline}_to_be_processed"
 
 # Results and metadata
 function gen_metadata {

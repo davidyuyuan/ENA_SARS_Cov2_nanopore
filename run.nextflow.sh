@@ -25,7 +25,7 @@ bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false --max_
 # Reserve ${table_name}_${j}.tsv
 gsutil -m cp "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" "gs://${dataset_name}/${table_name}_${j}.tsv" && \
   bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_leading_rows=0 --field_delimiter=tab \
-  --autodetect --max_bad_records=0 "${dataset_name}.sra_processing" "gs://${dataset_name}/${table_name}_${j}.tsv"
+  --max_bad_records=0 "${dataset_name}.sra_processing" "gs://${dataset_name}/${table_name}_${j}.tsv"
 
 nextflow -C "${config_dir}/nextflow.config" run "${nextflow_script}" -profile "${profile}" \
       --INDEX "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" \
