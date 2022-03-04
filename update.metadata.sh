@@ -23,13 +23,13 @@ function gen_metadata {
 
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "run_id"	"platform"	"model"	"first_public"	"first_created"	"country"	"collection_date"	"snapshot_date" > "${metadata}"
   true > "${metadata}.tmp"
-  while IFS="" read -r receipt || [ -n "$f" ]
+  sed 1d "${input_file}" | while IFS="" read -r receipt || [ -n "$f" ]
   do
     run_accession=$(echo "${receipt}" | cut -f 2 | cut -d '_' -f 1 )
     sample_accession=$(grep "${run_accession}" "${index_tsv}" | cut -f3-4,10-13)
     printf '%s\t%s\t%s\n' "${run_accession}" "${sample_accession}" "${timestamp}" >> "${metadata}.tmp"
-  done < "${input_file}"
-  sort -u "${metadata}.tmp" >> "${metadata}"
+  done
+  sort -u "${metadata}.tmp" >> "${metadata}" && rm "${metadata}.tmp"
 }
 
 gen_metadata "${output_dir}/${snapshot_date}_${pipeline}_${j}_receipts.tsv" "${DIR}/results/${snapshot_date}/${table_name}_${j}.tsv" "${output_dir}/${pipeline}_metadata_${j}.tsv" "${snapshot_date}"
