@@ -39,6 +39,3 @@ bq --project_id="${project_id}" load --source_format=CSV --replace=false --skip_
   "analysis_accession:STRING,file_submitted:STRING,time_submitted,snapshot_date"
 sql="UPDATE ${dataset_name}.submission_receipts SET snapshot_date = '""${snapshot_date}""' WHERE snapshot_date is NULL"
 bq --project_id="${project_id}" --format=csv query --use_legacy_sql=false "${sql}"
-
-# delete ${pipeline}_to_be_processed_${j}.tsv load to temp table, delete rows, delete temp table.
-#sed -e 's!_output/.*/successful_submissions.txt$!!g' -e 's!^.*/!!g' "${output_dir}/${pipeline}_receipts_${j}.txt" > "${output_dir}/${pipeline}_runs_submitted_${j}.txt"

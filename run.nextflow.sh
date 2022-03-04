@@ -6,12 +6,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 j=${1:-'0'}
 snapshot_date=${2:-'2022-02-25'}
 batch_size=${3:-'1'}
-pipeline=${4:-'nanopore'}
-nextflow_script=${5:-"${HOME}/ENA_SARS_Cov2_nanopore/main.nf"}
-profile=${6:-'gls'}
-root_dir=${7:-'gs://prj-int-dev-covid19-nf-gls'}
-dataset_name=${8:-'sarscov2_metadata'}
-project_id=${9:-'prj-int-dev-covid19-nf-gls'}
+test_submission=${4:-'true'}
+pipeline=${5:-'nanopore'}
+nextflow_script=${6:-"${HOME}/ENA_SARS_Cov2_nanopore/main.nf"}
+profile=${7:-'gls'}
+root_dir=${8:-'gs://prj-int-dev-covid19-nf-gls'}
+dataset_name=${9:-'sarscov2_metadata'}
+project_id=${10:-'prj-int-dev-covid19-nf-gls'}
 
 offset=$((j * batch_size))
 table_name="${pipeline}_to_be_processed"
@@ -34,6 +35,7 @@ gsutil -m cp "${output_dir}/${table_name}_${j}.tsv" "gs://${dataset_name}/${tabl
 # Process the batch with Nextflow
 #################################
 nextflow -C "${config_dir}/nextflow.config" run "${nextflow_script}" -profile "${profile}" \
+      --TEST_SUBMISSION "${test_submission}" \
       --INDEX "${output_dir}/${table_name}_${j}.tsv" \
       --OUTDIR "${pipeline_dir}/publishDir" \
       --STOREDIR "${pipeline_dir}/storeDir" \
