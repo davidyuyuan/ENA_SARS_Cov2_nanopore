@@ -57,7 +57,7 @@ process map_to_reference {
     tar -zcvf ${run_accession}_output.tar.gz ${run_accession}_output
     """
 }
-include { ena_analysis_submit } from './nextflow-lib/ena-analysis-submitter.nf'
+//include { ena_analysis_submit } from './nextflow-lib/ena-analysis-submitter.nf'
 workflow {
 //    Requires local input.
 //    accessions = fetchRunAccessions(params.INDEX)
@@ -68,5 +68,5 @@ workflow {
             .splitCsv(header: true, sep: '\t')
             .map { row -> tuple(row.run_accession, row.sample_accession, 'ftp://' + row.fastq_ftp) }
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI, params.SECRETS, params.STUDY)
-    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY, params.TEST_SUBMISSION)
+    //ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY, params.TEST_SUBMISSION)
 }
