@@ -6,6 +6,8 @@ params.STOREDIR = "/hps/nobackup/cochrane/ena/users/sands/1k/storeDir"
 params.OUTDIR = "/hps/nobackup/cochrane/ena/users/sands/1k/results"
 params.STUDY = 'PRJEB45555'
 params.TEST_SUBMISSION = 'true'
+params.PROJECTS_ACCOUNTS_CSV = ""
+params.STUDY_ACCESSION = ""
 nextflow.enable.dsl=2
 process map_to_reference {
     publishDir params.OUTDIR, mode:'copy'

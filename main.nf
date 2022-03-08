@@ -4,9 +4,9 @@
 //params.SARS2_FA_FAI = "gs://prj-int-dev-covid19-nf-gls/data/NC_045512.2.fa.fai"
 //params.SECRETS = "gs://prj-int-dev-covid19-nf-gls/prepro/projects_accounts.csv"
 
-params.INDEX = "gs://prj-int-dev-covid19-nf-gls/prepro/nanopore.index.tsv"
-params.STOREDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/storeDir"
-params.OUTDIR = "gs://prj-int-dev-covid19-nf-gls/prepro/results"
+params.INDEX = "/hps/nobackup/cochrane/ena/users/sands/100/1k/ENA_SARS_Cov2_nanopore/10.tsv"
+params.STOREDIR = "/hps/nobackup/cochrane/ena/users/sands/100/1k/ENA_SARS_Cov2_nanopore/storeDir10"
+params.OUTDIR = "/hps/nobackup/cochrane/ena/users/sands/100/1k/ENA_SARS_Cov2_nanopore/results-10"
 
 params.STUDY = 'PRJEB45555'
 params.TEST_SUBMISSION = 'true'
@@ -87,7 +87,7 @@ process map_to_reference {
     """
 }
 
-include { ena_analysis_submit } from './nextflow-lib/ena-analysis-submitter.nf'
+//include { ena_analysis_submit } from './nextflow-lib/ena-analysis-submitter.nf'
 workflow {
 //    Requires local input.
 //    accessions = fetchRunAccessions(params.INDEX)
@@ -99,5 +99,5 @@ workflow {
             .map { row -> tuple(row.run_accession, row.sample_accession, 'ftp://' + row.fastq_ftp) }
 
     map_to_reference(data, params.SARS2_FA, params.SARS2_FA_FAI, params.SECRETS, params.STUDY)
-    ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY, params.TEST_SUBMISSION)
+    //ena_analysis_submit(map_to_reference.out, params.SECRETS, params.STUDY, params.TEST_SUBMISSION)
 }
