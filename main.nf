@@ -32,7 +32,7 @@ process map_to_reference {
 
     cpus 4 /* more is better, parallelizes very well*/
     memory '8 GB'
-    container 'davidyuyuan/ena-sars-cov2-nanopore:1.0'
+    container 'davidyuyuan/ena-sars-cov2-nanopore:2.0'
 
     input:
     tuple val(run_accession), val(sample_accession), file(input_file)
